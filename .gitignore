@@ -1,4 +1,4 @@
-.cache
+.cache/
 logs/
 dataset/caltech101/
 dataset/dtd/
