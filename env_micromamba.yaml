@@ -1,0 +1,38 @@
+channels:
+  - pytorch
+  - nvidia
+  - defaults
+dependencies:
+  - python=3.12 # <-- Explicitly set Python to 3.12 
+  - pip
+  - pandas
+  - scikit-learn
+  - scipy
+  - ujson
+  - h5py
+  - seaborn
+  - matplotlib
+  - click
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1 # the version of pytorch-cuda must be <= to the version of CUDA shown by nvidia-smi (CUDA is backward-compatible). Even though PyTorch uses the version of CUDA installed by pytorch-cuda, the GPU driver installed on your system (which is tied to the CUDA version shown by nvidia-smi) still matters. The GPU driver determines the highest version of CUDA that can be used. pytorch-cuda installs the CUDA runtime and libraries, but these libraries still rely on the GPU driver to interface with the hardware.
+  - jupyterlab
+  - notebook
+  - ipywidgets
+  - pip:
+    - calmsize
+    - memory-profiler
+    - opacus
+    - portalocker
+    - cvxpy
+    - higher
+    - diffusers
+    - accelerate
+    - gdown
+    - transformers
+    - datasets
+    - tqdm
+    - lightning
+    - watermark
+    - wandb
