@@ -10,6 +10,7 @@ import logging
 
 # from flcore.servers.serverfft import FedFft
 from flcore.servers.serverlora import FLora
+from flcore.servers.servermeta import FMeta
 from flcore.servers.serverloraselectmost import FLoraSelectMost
 from flcore.servers.serverloraselectmostwoh import FLoraSelectMostWoH
 from flcore.servers.serverloraselectleast import FLoraSelectLeast
@@ -45,6 +46,7 @@ from flcore.servers.serversoralocal import FSoraLocal
 
 
 from flcore.trainmodel.clip_model import *
+from flcore.trainmodel.clip_model_simple import *
 
 from utils.result_utils import average_data
 from utils.mem_utils import MemReporter
@@ -104,6 +106,9 @@ def run(args):
 
         if args.algorithm == "flora":
             server = FLora(args, i)
+        
+        elif args.algorithm == "fmeta":
+            server = FMeta(args, i)
 
         elif args.algorithm == "floraselectmost":
             server = FLoraSelectMost(args, i)
@@ -312,6 +317,19 @@ if __name__ == "__main__":
     parser.add_argument('-wd', "--weight_decay", type=float, default=0)
     parser.add_argument('-ld', "--learning_rate_decay", action='store_true', help="apply learning rate decay")
     parser.add_argument('-ldg', "--learning_rate_decay_gamma", type=float, default=0.99)
+
+    # meta
+    parser.add_argument('-inner_steps', "--inner_steps", type=int, default=3)
+    parser.add_argument('-meta_inner_lr', "--meta_inner_lr", type=float, default=2e-2)
+    parser.add_argument('-meta_outer_lr', "--meta_outer_lr", type=float, default=5e-4)
+    parser.add_argument('-gumbel_temp', "--gumbel_temp", type=float, default=0.5)
+    parser.add_argument('-meta_support_fraction', "--meta_support_fraction", type=float, default=0.5)
+
+    parser.add_argument('-kl_gamma', "--kl_gamma", type=float, default=1.0, help="weight on KL distillation loss")
+    parser.add_argument('-consistency_lambda', "--consistency_lambda", type=float, default=0.1, help="weight on embedding‐consistency loss")
+    parser.add_argument('-sparsity_lambda', "--sparsity_lambda", type=float, default=1e-4, help="L1 penalty on gates")
+    parser.add_argument('-server_lr', "--server_lr", type=float, default=0.5, help="global meta‐step size (0.5=half‐way toward client mean)")
+    parser.add_argument('-distill_temp', "--distill_temp", type=float, default=3.0, help="temperature for KL divergence")
 
     # FLoRADrop / FLoRADropReverse / FLoRASelectMost / FLoRASelectLeast
     parser.add_argument('-k_layers', "--k_layers", type=int, default=1)
