@@ -27,8 +27,8 @@ partition = 'dir'
 # partition = 'dir10'
 # partition = 'dir001'
 
-# alg = 'fmetav'
-alg = 'fmetat'
+alg = 'fmetav'
+# alg = 'fmetat'
 # alg = 'flora2'
 
 fontsize = 24 

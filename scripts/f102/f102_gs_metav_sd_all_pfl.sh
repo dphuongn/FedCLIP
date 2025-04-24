@@ -1,6 +1,6 @@
 #!/bin/bash
 # Dataset 
-dataset='p37'
+dataset='f102'
 
 # Partition
 # partition='iid'

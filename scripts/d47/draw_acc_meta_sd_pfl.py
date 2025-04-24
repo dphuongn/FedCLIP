@@ -19,7 +19,7 @@ lightblue_color = '#87ceeb'
 magenta_color = '#ff00ff'   
 cyan_color = '#00ffff'
 
-dataset = 'p37'
+dataset = 'd47'
 
 # partition = 'iid'
 partition = 'dir'
@@ -27,8 +27,8 @@ partition = 'dir'
 # partition = 'dir10'
 # partition = 'dir001'
 
-alg = 'fmetav'
-# alg = 'fmetat'
+# alg = 'fmetav'
+alg = 'fmetat'
 # alg = 'flora2'
 
 fontsize = 24 
@@ -62,7 +62,7 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     
-    plt.title(f'Pets | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
+    plt.title(f'DTD | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
     plt.xlabel('Round', fontsize=fontsize)
     plt.ylabel('Top-1 accuracy (%)', fontsize=fontsize)
     plt.legend(fontsize=fontsize_small, ncol=2, loc='lower right', bbox_to_anchor=(1, 0))

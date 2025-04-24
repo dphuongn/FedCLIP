@@ -3,4 +3,7 @@ logs/
 dataset/caltech101/
 dataset/dtd/
 dataset/pets/
+dataset/aircraft/
+dataset/flowers/
 fast-differential-privacy/
+

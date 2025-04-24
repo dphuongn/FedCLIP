@@ -5,7 +5,7 @@ import random
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from utils.dataset_utils import check, process_dataset, separate_data, separate_data_pfl, split_data, save_file, separate_data_few_shot_iid, separate_data_few_shot_pat_non_iid
+from utils.dataset_utils import check, process_dataset, separate_data, separate_data_pfl, split_data, save_file
 
 random.seed(1)
 np.random.seed(1)
@@ -55,6 +55,7 @@ def generate_aircraft(dir_path, num_clients, num_classes, niid, balance, partiti
     # Combine train and test datasets separately
     dataset_image = np.concatenate((train_images, test_images), axis=0)
     dataset_label = np.concatenate((train_labels, test_labels), axis=0)
+    
     
     if pfl:
         X, y, statistic = separate_data_pfl((dataset_image, dataset_label), num_clients, num_classes,  

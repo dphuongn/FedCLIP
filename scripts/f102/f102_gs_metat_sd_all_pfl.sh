@@ -1,6 +1,6 @@
 #!/bin/bash
 # Dataset 
-dataset='p37'
+dataset='f102'
 
 # Partition
 # partition='iid'
@@ -53,7 +53,7 @@ for sd in "${seeds[@]}"; do
         for a in "${alphas[@]}"; do
             for lr in "${learning_rates[@]}"; do
                 for wd in "${weight_decays[@]}"; do
-                    job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_a${a}_sd${sd}_all_pfl"
+                    job_name="${dataset}_${partition}_${algo}t_lr${lr}_wd${wd}_r${r}_a${a}_sd${sd}_all_pfl"
                     output_file="${log_dir}/${job_name}.out"
                     error_file="${log_dir}/${job_name}.err"
 
@@ -85,12 +85,12 @@ for sd in "${seeds[@]}"; do
                                     -wd ${wd} \
                                     --lora_rank ${r} \
                                     --lora_alpha ${a} \
-                                    --lora_key_vision \
-                                    --lora_query_vision \
-                                    --lora_value_vision \
-                                    --lora_outproj_vision \
-                                    --lora_mlp_vision \
-                                    --lora_head_vision \
+                                    --lora_key_text \
+                                    --lora_query_text \
+                                    --lora_value_text \
+                                    --lora_outproj_text \
+                                    --lora_mlp_text \
+                                    --lora_head_text \
                                     -pfl \
                                     -sd ${sd}\""
 
