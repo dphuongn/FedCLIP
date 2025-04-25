@@ -5,5 +5,6 @@ dataset/dtd/
 dataset/pets/
 dataset/aircraft/
 dataset/flowers/
+dataset/cifar10/
 fast-differential-privacy/
 
