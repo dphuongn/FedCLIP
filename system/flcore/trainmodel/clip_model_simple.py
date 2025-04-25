@@ -10,23 +10,6 @@ from transformers import CLIPProcessor, CLIPModel
 
 # from utils.data_utils import return_zeroshot_weight
 
-
-def get_processor(model_checkpoint, home_dir):
-    """
-    Get the processor for the specified model checkpoint.
-
-    Args:
-        model_checkpoint (str): Identifier for the pre-trained model.
-        home_dir (str): Directory path for model and processor caching.
-
-    Returns:
-        CLIPProcessor: The processor for the specified model.
-    """
-    home_dir = Path(home_dir)
-    cache_dir = home_dir / "models"
-    processor = CLIPProcessor.from_pretrained(model_checkpoint, cache_dir=cache_dir)
-    return processor
-
 class LoRALayer(nn.Module):
     def __init__(self, in_dim, out_dim, rank: int, alpha: int, dropout: float):
         super().__init__()

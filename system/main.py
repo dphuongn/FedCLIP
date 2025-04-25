@@ -11,6 +11,7 @@ import logging
 # from flcore.servers.serverfft import FedFft
 from flcore.servers.serverlora import FLora
 from flcore.servers.servermeta import FMeta
+from flcore.servers.serverdual import FLoraDual
 from flcore.servers.serverloraselectmost import FLoraSelectMost
 from flcore.servers.serverloraselectmostwoh import FLoraSelectMostWoH
 from flcore.servers.serverloraselectleast import FLoraSelectLeast
@@ -109,6 +110,9 @@ def run(args):
         
         elif args.algorithm == "fmeta":
             server = FMeta(args, i)
+        
+        elif args.algorithm == "fdual":
+            server = FLoraDual(args, i)
 
         elif args.algorithm == "floraselectmost":
             server = FLoraSelectMost(args, i)
@@ -331,6 +335,9 @@ if __name__ == "__main__":
     parser.add_argument('-server_lr', "--server_lr", type=float, default=0.5, help="global meta‐step size (0.5=half‐way toward client mean)")
     parser.add_argument('-distill_temp', "--distill_temp", type=float, default=3.0, help="temperature for KL divergence")
 
+    # fdual
+    parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=1.0)
+
     # FLoRADrop / FLoRADropReverse / FLoRASelectMost / FLoRASelectLeast
     parser.add_argument('-k_layers', "--k_layers", type=int, default=1)
 
@@ -522,8 +529,30 @@ if __name__ == "__main__":
         'lora_head_vision': args.lora_head_vision,
     }
 
+    args.lora_params_global = {
+        'rank': args.lora_rank,
+        'rank_min': args.lora_rank_min,
+        'rank_max': args.lora_rank_max,
+        'alpha': args.lora_alpha,
+        'alpha_min': args.lora_alpha_min,
+        'alpha_max': args.lora_alpha_max,
+        'dropout': args.lora_dropout,
+        'lora_key_text': args.lora_key_text,
+        'lora_query_text': args.lora_query_text,
+        'lora_value_text': args.lora_value_text,
+        'lora_outproj_text': args.lora_outproj_text,
+        'lora_mlp_text': args.lora_mlp_text,
+        'lora_head_text': args.lora_head_text,
+        'lora_key_vision': args.lora_key_vision,
+        'lora_query_vision': args.lora_query_vision,
+        'lora_value_vision': args.lora_value_vision,
+        'lora_outproj_vision': args.lora_outproj_vision,
+        'lora_mlp_vision': args.lora_mlp_vision,
+        'lora_head_vision': args.lora_head_vision,
+    }
+
     args.lora_params_local = {
-        'rank': args.lora_rank_local,
+        'rank': args.lora_rank,
         'rank_min': args.lora_rank_min,
         'rank_max': args.lora_rank_max,
         'alpha': args.lora_alpha,
@@ -616,6 +645,21 @@ if __name__ == "__main__":
     print("ca_bottleneck_reduction: {}".format(args.ca_bottleneck_reduction))
     print("ca_text: {}".format(args.ca_text))
     print("ca_vision: {}".format(args.ca_vision))
+
+    print(f"{'-'*5} For meta {'-'*5}")
+    print("inner_steps: {}".format(args.inner_steps))
+    print("meta_inner_lr: {}".format(args.meta_inner_lr))
+    print("gumbel_temp: {}".format(args.gumbel_temp))
+    print("kl_gamma: {}".format(args.kl_gamma))
+    print("consistency_lambda: {}".format(args.consistency_lambda))
+    print("sparsity_lambda: {}".format(args.sparsity_lambda))
+    print("server_lr: {}".format(args.server_lr))
+    print("distill_temp: {}".format(args.distill_temp))
+    print("-" * 20)
+
+    print(f"{'-'*5} For dual {'-'*5}")
+    print("ref_data_fraction: {}".format(args.ref_data_fraction))
+    print("-" * 20)
     
     print(f"{'-'*5} For DAT {'-'*5}")
     print("mu_global: {}".format(args.mu_global))
