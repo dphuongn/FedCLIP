@@ -19,7 +19,7 @@ lightblue_color = '#87ceeb'
 magenta_color = '#ff00ff'   
 cyan_color = '#00ffff'
 
-dataset = 'd47'
+dataset = 'f102'
 
 # partition = 'iid'
 partition = 'dir'
@@ -62,7 +62,7 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     
-    plt.title(f'DTD | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
+    plt.title(f'Flowers | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
     plt.xlabel('Round', fontsize=fontsize)
     plt.ylabel('Top-1 accuracy (%)', fontsize=fontsize)
     plt.legend(fontsize=fontsize_small, ncol=2, loc='lower right', bbox_to_anchor=(1, 0))
@@ -73,7 +73,6 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.close()
 
 lrs = ['5e-5', '1e-5', '5e-6', '1e-6']
-lrs = ['5e-3', '1e-3', '5e-4', '1e-4']
 # lrs = ['5e-6']                        # florav dir
 # lrs = ['1e-6']                        # florat dir
 

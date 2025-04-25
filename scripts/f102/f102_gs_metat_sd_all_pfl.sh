@@ -39,6 +39,7 @@ echo "$PWD"
 echo "Started batch job at $(date)"
 
 learning_rates=(5e-5 1e-5 5e-6 1e-6)
+learning_rates=(5e-3 1e-3 5e-4 1e-4)
 # learning_rates=(1e-6)                   # dir
 # learning_rates=(1e-6)                   # dir001
 
