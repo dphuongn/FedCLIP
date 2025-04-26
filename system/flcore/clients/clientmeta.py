@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 import time
 from flcore.clients.clientbase import Client
-from transformers import AdamW
+# from transformers import AdamW
 from flcore.optimizers.sparse_optimizer import SparseAdamW
 
 from tqdm.auto import tqdm
@@ -63,7 +63,7 @@ class clientMeta(Client):
         ]
 
         # optimizer will update both weights and gates
-        self.meta_optimizer = AdamW(
+        self.meta_optimizer = torch.optim.AdamW(
             self.meta_params + self.gate_params,
             lr=self.meta_lr
         )

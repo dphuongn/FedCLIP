@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 import time
 from flcore.clients.clientbase import Client
-from transformers import AdamW
+# from transformers import AdamW
 from flcore.optimizers.sparse_optimizer import SparseAdamW
 
 from tqdm.auto import tqdm
@@ -69,7 +69,7 @@ class clientSORALOCAL(Client):
         )
         
         # Initialize the AdamW optimizer from transformers for W_a and W_b matrices
-        self.lora_optimizer = AdamW(
+        self.lora_optimizer = torch.optim.AdamW(
             params=self.lora_params,
             lr=self.learning_rate,
             betas=(self.beta1, self.beta2),

@@ -20,6 +20,12 @@ class FLoraDual(Server):
         self.lora_params_global = args.lora_params_global
         self.lora_params_local  = args.lora_params_local
 
+        self.learning_rate = args.local_learning_rate
+        self.beta1 = args.beta1
+        self.beta2 = args.beta2
+        self.eps = args.eps
+        self.weight_decay = args.weight_decay
+
         # build a combined CLIP with dual LoRA
         cache_dir = Path(args.home_dir) / "models"
         self.clip_model_object = CLIPModelWithDualLoRA(
@@ -51,19 +57,26 @@ class FLoraDual(Server):
             #  (T) or (P)-FL logic unchanged, but they all call client.train()
             if not self.pfl:
                 if rnd % self.eval_gap == 0:
-                    print(f"\n----- Round {rnd} -----")
-                    print("Eval global model")
+                    print(f"\n-------------Round number: {rnd}-------------")
+                    print("\nEvaluate global model")
                     self.evaluate()
                 if rnd < self.global_rounds:
-                    for c in self.selected_clients: c.train()
+                    for c in self.selected_clients: 
+                        c.train()
                     self.receive_models()
                     # self.aggregate_parameters_lora()
                     self.aggregate_via_distillation()
 
             else:
-                print(f"\n----- Round {rnd} (Personalized) -----")
-                for c in self.selected_clients: c.train()
-                print("Eval personalized")
+                # print(f"\n----- Round {rnd} (Personalized) -----")
+                print(f"\n-------------Round number: {rnd}-------------")
+                for c in self.selected_clients: 
+                    # c.train()
+                    g_val = c.train()
+                    # this will print client‐side already, 
+                    # but you can also aggregate or print server‐side:
+                    print(f"Round {rnd} → Client {c.id} gating: {g_val:.4f}")
+                print("\n-------------Evaluate personalized models-------------")
                 self.evaluate()
                 self.receive_models()
                 # self.aggregate_parameters_lora()
@@ -117,20 +130,34 @@ class FLoraDual(Server):
         
         return DataLoader(ref_subset, batch_size, drop_last=False, shuffle=False)
 
-    def aggregate_via_distillation(self, distill_epochs=1, lr=1e-3):
+    # def aggregate_via_distillation(self, distill_epochs=1, lr=1e-3):
+    def aggregate_via_distillation(self, distill_epochs=1, lr=self.learning_rate):
 
         self.ref_loader = self.load_ref_data()
 
         # 1) collect client global‐only dicts
-        client_adapters = [c.get_parameters() for c in self.selected_clients]
+        # client_adapters = [c.get_parameters() for c in self.selected_clients]
+
+        # 1) use the already-received adapters + normalized weights
+        client_adapters = self.uploaded_models       # list of dicts
+        client_weights  = self.uploaded_weights      # list of floats, sum=1
 
         # 2) freeze backbone + local + gating
         self.clip_model_object.freeze_backbone_and_local()
         self.clip_model_object.set_global_only(True)   # only global used in forward
 
+        params = list(self.global_adapters.values())
+        # opt = torch.optim.AdamW(
+        #     self.clip_model_object.lora_layers_global.values(), lr=lr
+        # )
         opt = torch.optim.AdamW(
-            self.clip_model_object.lora_layers_global.values(), lr=lr
+            params=params,
+            lr=self.learning_rate,
+            betas=(self.beta1, self.beta2),
+            eps=self.eps,
+            weight_decay=self.weight_decay
         )
+
         kl_loss = torch.nn.KLDivLoss(reduction='batchmean')
 
         # 3) Inner distillation loop
@@ -146,7 +173,8 @@ class FLoraDual(Server):
                 
                 teacher_probs = []
                 with torch.no_grad():
-                    for adapter_dict in client_adapters:
+                    # for adapter_dict in client_adapters:
+                    for w, adapter_dict in zip(client_weights, client_adapters):
                         # copy wrapper, load that client’s global‐only weights
                         teacher = copy.deepcopy(self.clip_model_object)
                         teacher.set_global_adapter(adapter_dict)
@@ -162,10 +190,15 @@ class FLoraDual(Server):
                         i_feats = F.normalize(i_feats, dim=1)
                         t_feats = F.normalize(t_feats, dim=1)
                         logits = self.logit_scale * (i_feats @ t_feats.t())
-                        teacher_probs.append(F.softmax(logits, dim=-1))
+
+                        # teacher_probs.append(F.softmax(logits, dim=-1))
+                        # weight each client’s distribution
+                        teacher_probs.append(w * F.softmax(logits, dim=-1))
 
                     # average over clients → [B, C]
-                    T = torch.stack(teacher_probs, dim=0).mean(0)
+                    # T = torch.stack(teacher_probs, dim=0).mean(0)
+                    # weighted sum → [B, C]
+                    T = torch.stack(teacher_probs, dim=0).sum(0)
 
                 self.clip_model_object.model_combined.to(self.device).train()
 

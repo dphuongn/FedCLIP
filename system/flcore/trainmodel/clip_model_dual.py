@@ -69,11 +69,15 @@ class LinearWithDualLoRA(nn.Module):
         """
         # Base output from the frozen CLIP linear
         base = self.linear(x)
+
         if self.global_only:
             # Only the global adapter
             return base + self.lora_global(x)
         # Compute gating scores per instance (or per token) without flattening
         g = self.gating_net(x)  # Shape: [B, D_in] -> [B, 1] or [B, L, 1]
+
+        self.last_gating = g.detach()         # stash it for later
+
         # Broadcast across output dims automatically
         return base + g * self.lora_global(x) + (1 - g) * self.lora_local(x)
 
@@ -180,48 +184,6 @@ class CLIPModelWithDualLoRA(nn.Module):
                 patch(layer.mlp, 'fc2', f"vision_model.encoder.layers.{i}.mlp.fc2")
         if self.lora_params_global.get('lora_head_vision'):
             patch(self.model_combined, 'visual_projection', 'visual_projection')
-
-        # # Apply combined LoRA (both global and local) to the model's text and vision encoders
-        # for i, layer in enumerate(self.model_combined.text_model.encoder.layers):
-        #     if self.lora_params_global.get('lora_key_text', False):
-        #         assign_and_store_lora_combined(layer.self_attn, 'k_proj', f"text_model.encoder.layers.{i}.self_attn.k_proj")
-        #     if self.lora_params_global.get('lora_query_text', False):
-        #         assign_and_store_lora_combined(layer.self_attn, 'q_proj', f"text_model.encoder.layers.{i}.self_attn.q_proj")
-        #     if self.lora_params_global.get('lora_value_text', False):
-        #         assign_and_store_lora_combined(layer.self_attn, 'v_proj', f"text_model.encoder.layers.{i}.self_attn.v_proj")
-        #     if self.lora_params_global.get('lora_outproj_text', False):
-        #         assign_and_store_lora_combined(layer.self_attn, 'out_proj', f"text_model.encoder.layers.{i}.self_attn.out_proj")
-        #     if self.lora_params_global.get('lora_mlp_text', False):
-        #         assign_and_store_lora_combined(layer.mlp, 'fc1', f"text_model.encoder.layers.{i}.mlp.fc1")
-        #         assign_and_store_lora_combined(layer.mlp, 'fc2', f"text_model.encoder.layers.{i}.mlp.fc2")
-
-        # if self.lora_params_global.get('lora_head_text', False):
-        #     self.model_combined.text_projection = assign_lora_combined(self.model_combined.text_projection)
-        #     for param_name, param in self.model_combined.text_projection.lora_global.named_parameters():
-        #         self.lora_layers_global[f'text_projection.{param_name}'] = param
-        #     for param_name, param in self.model_combined.text_projection.lora_local.named_parameters():
-        #         self.lora_layers_local[f'text_projection.{param_name}'] = param
-
-        # # Apply combined LoRA to the vision encoder
-        # for i, layer in enumerate(self.model_combined.vision_model.encoder.layers):
-        #     if self.lora_params_global.get('lora_key_vision', False):
-        #         assign_and_store_lora_combined(layer.self_attn, 'k_proj', f"vision_model.encoder.layers.{i}.self_attn.k_proj")
-        #     if self.lora_params_global.get('lora_query_vision', False):
-        #         assign_and_store_lora_combined(layer.self_attn, 'q_proj', f"vision_model.encoder.layers.{i}.self_attn.q_proj")
-        #     if self.lora_params_global.get('lora_value_vision', False):
-        #         assign_and_store_lora_combined(layer.self_attn, 'v_proj', f"vision_model.encoder.layers.{i}.self_attn.v_proj")
-        #     if self.lora_params_global.get('lora_outproj_vision', False):
-        #         assign_and_store_lora_combined(layer.self_attn, 'out_proj', f"vision_model.encoder.layers.{i}.self_attn.out_proj")
-        #     if self.lora_params_global.get('lora_mlp_vision', False):
-        #         assign_and_store_lora_combined(layer.mlp, 'fc1', f"vision_model.encoder.layers.{i}.mlp.fc1")
-        #         assign_and_store_lora_combined(layer.mlp, 'fc2', f"vision_model.encoder.layers.{i}.mlp.fc2")
-
-        # if self.lora_params_global.get('lora_head_vision', False):
-        #     self.model_combined.visual_projection = assign_lora_combined(self.model_combined.visual_projection)
-        #     for param_name, param in self.model_combined.visual_projection.lora_global.named_parameters():
-        #         self.lora_layers_global[f'visual_projection.{param_name}'] = param
-        #     for param_name, param in self.model_combined.visual_projection.lora_local.named_parameters():
-        #         self.lora_layers_local[f'visual_projection.{param_name}'] = param
 
     def set_global_adapter(self, adapter_dict: dict[str, nn.Parameter]):
         """

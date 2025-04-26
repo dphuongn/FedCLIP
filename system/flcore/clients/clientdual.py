@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 import time
 from flcore.clients.clientbase import Client
-from transformers import AdamW
+# from transformers import AdamW
 from flcore.optimizers.sparse_optimizer import SparseAdamW
 
 from tqdm.auto import tqdm
@@ -31,8 +31,6 @@ class ClientDualLORA(Client):
         )
         self.clip_model = self.clip_model_object.model_combined
 
-        print(f'self.clip_model: {self.clip_model}')
-
         # collect parameter dicts
         self.global_adapters = self.clip_model_object.lora_layers_global
         self.local_adapters  = self.clip_model_object.lora_layers_local
@@ -43,7 +41,7 @@ class ClientDualLORA(Client):
                + list(self.local_adapters.values())  \
                + list(self.gating_params.values())
 
-        self.optimizer = AdamW(
+        self.optimizer = torch.optim.AdamW(
             params=params,
             lr=self.learning_rate,
             betas=(self.beta1, self.beta2),
@@ -102,6 +100,21 @@ class ClientDualLORA(Client):
         self.train_time_cost['num_rounds'] += 1
         self.train_time_cost['total_cost']  += elapsed
         print(f"Client {self.id} train time {elapsed/60:.2f}m, mem {torch.cuda.max_memory_reserved()/1e9:.2f}GB")
+
+        # 1) after all epochs, gather gating scalars from every LoRALayer
+        gs = []
+        for module in self.clip_model.modules():
+            if isinstance(module, LinearWithDualLoRA) and module.last_gating is not None:
+                # take the mean over batch (and tokens, if any)
+                gs.append(module.last_gating.mean().item())
+        # 2) average them to a single float
+        avg_g = sum(gs) / len(gs) if len(gs) > 0 else 0.0
+
+        # 3) print or store it
+        print(f"[Client {self.id}] avg gating = {avg_g:.4f}")
+
+        # 4) return it to the server
+        return avg_g
 
     def test_metrics(self):
         testloader = self.load_test_data()

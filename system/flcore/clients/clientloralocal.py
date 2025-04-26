@@ -31,7 +31,7 @@ class clientLORALOCAL(Client):
         
         self.logit_scale = self.clip_model.state_dict()['logit_scale'].exp()
         
-        self.optimizer = torch.optim.Adam(
+        self.optimizer = torch.optim.AdamW(
             [p for name, p in self.clip_model.named_parameters() if p.requires_grad], 
             lr=self.learning_rate, 
             betas=(self.beta1, self.beta2), 

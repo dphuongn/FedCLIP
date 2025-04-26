@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 import time
 from flcore.clients.clientbase import Client
-from transformers import AdamW
+# from transformers import AdamW
 from flcore.optimizers.sparse_optimizer import SparseAdamW
 
 from tqdm.auto import tqdm
@@ -92,7 +92,7 @@ class clientSORADUALHETEROCOMBINED(Client):
         )
         
         # Initialize the AdamW optimizer from transformers for local W_a and W_b matrices
-        self.local_optimizer = AdamW(
+        self.local_optimizer = torch.optim.AdamW(
             params=self.lora_params_local,
             lr=self.learning_rate,
             betas=(self.beta1, self.beta2),
@@ -100,7 +100,7 @@ class clientSORADUALHETEROCOMBINED(Client):
             weight_decay=self.weight_decay,
         )
         
-        self.mu_local_optimizer = AdamW(
+        self.mu_local_optimizer = torch.optim.AdamW(
             params=[self.mu_local],
             lr=self.mu_learning_rate_local, 
             betas=(self.beta1, self.beta2), 
@@ -109,7 +109,7 @@ class clientSORADUALHETEROCOMBINED(Client):
         )
         
         # Optimizers for both global LoRA layers
-        self.global_optimizer = AdamW(
+        self.global_optimizer = torch.optim.AdamW(
             params=self.global_lora_params, 
             lr=self.learning_rate, 
             betas=(self.beta1, self.beta2), 
@@ -117,7 +117,7 @@ class clientSORADUALHETEROCOMBINED(Client):
             weight_decay=self.weight_decay
         )
         
-        self.mu_global_optimizer = AdamW(
+        self.mu_global_optimizer = torch.optim.AdamW(
             params=[self.mu_global],
             lr=self.mu_learning_rate_global, 
             betas=(self.beta1, self.beta2), 

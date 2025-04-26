@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 import time
 from flcore.clients.clientbase import Client
-from transformers import AdamW
+# from transformers import AdamW
 
 from tqdm.auto import tqdm
 from torch.utils.data import DataLoader
@@ -50,7 +50,7 @@ class clientLORADATTRUEHALF(Client):
         self.local_lora_params = [p for p in self.clip_model_local.parameters() if p.requires_grad]
         
         # Optimizers for both global and client-specific LoRA layers
-        self.global_optimizer = AdamW(
+        self.global_optimizer = torch.optim.AdamW(
             params=self.global_lora_params, 
             lr=self.learning_rate, 
             betas=(self.beta1, self.beta2), 
@@ -58,7 +58,7 @@ class clientLORADATTRUEHALF(Client):
             weight_decay=self.weight_decay
         )
         
-        self.mu_global_optimizer = AdamW(
+        self.mu_global_optimizer = torch.optim.AdamW(
             params=[self.mu_global],
             lr=self.mu_learning_rate_global, 
             betas=(self.beta1, self.beta2), 
@@ -66,7 +66,7 @@ class clientLORADATTRUEHALF(Client):
             weight_decay=self.weight_decay
         )
 
-        self.local_optimizer = AdamW(
+        self.local_optimizer = torch.optim.AdamW(
             params=self.local_lora_params, 
             lr=self.learning_rate, 
             betas=(self.beta1, self.beta2), 
@@ -74,7 +74,7 @@ class clientLORADATTRUEHALF(Client):
             weight_decay=self.weight_decay
         )
         
-        self.mu_local_optimizer = AdamW(
+        self.mu_local_optimizer = torch.optim.AdamW(
             params=[self.mu_local],
             lr=self.mu_learning_rate_local, 
             betas=(self.beta1, self.beta2), 

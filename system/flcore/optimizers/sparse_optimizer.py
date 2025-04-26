@@ -1,8 +1,9 @@
-from transformers import AdamW 
+# from transformers import AdamW 
 from torch.optim import Optimizer
 import torch
 import math
 import numpy as np
+from torch.optim import AdamW
 
 class SparseAdamW(AdamW):
     def __init__(self,
