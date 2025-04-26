@@ -10,4 +10,3 @@ fast-differential-privacy/
 # Python bytecode
 __pycache__/
 *.pyc
-

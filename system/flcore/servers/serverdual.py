@@ -65,7 +65,7 @@ class FLoraDual(Server):
                         c.train()
                     self.receive_models()
                     # self.aggregate_parameters_lora()
-                    self.aggregate_via_distillation()
+                    self.aggregate_via_distillation(lr=self.learning_rate)
 
             else:
                 # print(f"\n----- Round {rnd} (Personalized) -----")
@@ -80,7 +80,7 @@ class FLoraDual(Server):
                 self.evaluate()
                 self.receive_models()
                 # self.aggregate_parameters_lora()
-                self.aggregate_via_distillation()
+                self.aggregate_via_distillation(lr=self.learning_rate)
 
             self.Budget.append(time.time() - t0)
             print(f"{'-'*10} round time: {self.Budget[-1]:.2f}s {'-'*10}")
@@ -130,8 +130,8 @@ class FLoraDual(Server):
         
         return DataLoader(ref_subset, batch_size, drop_last=False, shuffle=False)
 
-    # def aggregate_via_distillation(self, distill_epochs=1, lr=1e-3):
-    def aggregate_via_distillation(self, distill_epochs=1, lr=self.learning_rate):
+    def aggregate_via_distillation(self, distill_epochs=1, lr=1e-3):
+    # def aggregate_via_distillation(self, distill_epochs=1, lr=self.learning_rate):
 
         self.ref_loader = self.load_ref_data()
 
@@ -146,7 +146,7 @@ class FLoraDual(Server):
         self.clip_model_object.freeze_backbone_and_local()
         self.clip_model_object.set_global_only(True)   # only global used in forward
 
-        params = list(self.global_adapters.values())
+        params = list(self.clip_model_object.lora_layers_global.values())
         # opt = torch.optim.AdamW(
         #     self.clip_model_object.lora_layers_global.values(), lr=lr
         # )
