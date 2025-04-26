@@ -19,6 +19,11 @@ class Server(object):
         self.dataset = args.dataset
         self.num_classes = args.num_classes
         self.global_rounds = args.global_rounds
+
+        self.ref_data_fraction = args.ref_data_fraction
+        self.num_classes = args.num_classes
+        self.ref_samples = 0
+        self.batch_size_ref = args.batch_size_train
         
         self.num_clients = args.num_clients
         self.join_ratio = args.join_ratio

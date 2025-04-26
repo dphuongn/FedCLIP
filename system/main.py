@@ -11,6 +11,7 @@ import logging
 # from flcore.servers.serverfft import FedFft
 from flcore.servers.serverlora import FLora
 from flcore.servers.servermeta import FMeta
+from flcore.servers.serverdual import FLoraDual
 from flcore.servers.serverloraselectmost import FLoraSelectMost
 from flcore.servers.serverloraselectmostwoh import FLoraSelectMostWoH
 from flcore.servers.serverloraselectleast import FLoraSelectLeast
@@ -109,6 +110,9 @@ def run(args):
         
         elif args.algorithm == "fmeta":
             server = FMeta(args, i)
+
+        elif args.algorithm == "fdual":
+            server = FLoraDual(args, i)
 
         elif args.algorithm == "floraselectmost":
             server = FLoraSelectMost(args, i)
@@ -319,11 +323,19 @@ if __name__ == "__main__":
     parser.add_argument('-ldg', "--learning_rate_decay_gamma", type=float, default=0.99)
 
     # meta
-    parser.add_argument('-inner_steps', "--inner_steps", type=int, default=3)
-    parser.add_argument('-meta_inner_lr', "--meta_inner_lr", type=float, default=2e-2)
-    parser.add_argument('-meta_outer_lr', "--meta_outer_lr", type=float, default=5e-4)
-    parser.add_argument('-gumbel_temp', "--gumbel_temp", type=float, default=0.5)
-    parser.add_argument('-meta_support_fraction', "--meta_support_fraction", type=float, default=0.5)
+    parser.add_argument('-inner_steps', "--inner_steps", type=int, default=3, 
+                        help="number of fast-adapt updates per client. Start small—1 to 5 steps. Too few and the client won’t really adapt; too many and you blow out your compute budget and risk overfitting the small support set. I’d try 3 as a first guess")
+    parser.add_argument('-meta_inner_lr', "--meta_inner_lr", type=float, default=2e-2,
+                        help="α in the inner loop. A relatively high learning-rate works best for rapid adaptation. Something like 1e-2 to 5e-2. Try 0.02 and tune from there.")
+    parser.add_argument('-meta_outer_lr', "--meta_outer_lr", type=float, default=5e-4,
+                        help="η for aggregating meta-gradients on the server. This should be smaller and more stable—for instance 1×10⁻³ to 1×10⁻⁴. I’d start at 5×10⁻⁴.")
+    parser.add_argument('-gumbel_temp', "--gumbel_temp", type=float, default=0.5,
+                        help="τ for Gumbel-Softmax gating. Controls how “hard” your mask sampling is. You could begin with a relatively soft τ=1.0 and then anneal down toward 0.1 over rounds. If you want a fixed value, 0.5 is a good compromise between exploration (soft) and discreteness (hard).")
+    parser.add_argument('-meta_support_fraction', "--meta_support_fraction", type=float, default=0.5,
+                        help="fraction of local data for inner-loop support. A 50/50 split is common: 0.5. If your client datasets are very small you may want to use less (e.g. 0.3 support, 0.7 query) so the meta-gradient sees more held-out examples.")
+    
+    # fdual
+    parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=1.0)
 
     parser.add_argument('-kl_gamma', "--kl_gamma", type=float, default=1.0, help="weight on KL distillation loss")
     parser.add_argument('-consistency_lambda', "--consistency_lambda", type=float, default=0.1, help="weight on embedding‐consistency loss")
@@ -439,7 +451,8 @@ if __name__ == "__main__":
     # parser.add_argument('--home_dir', type=str, default=str(Path.home()))
 
     # parser.add_argument('--home_dir', type=str, default="/scratch/bczq/")
-    parser.add_argument('--home_dir', type=str, default="/work/LAS/jannesar-lab/dphuong")
+    # parser.add_argument('--home_dir', type=str, default="/work/LAS/jannesar-lab/dphuong")
+    parser.add_argument('--home_dir', type=str, default="/data")
     
     parser.add_argument('--delete', action='store_false', help="delete result.h5 file after reading")
     
@@ -454,7 +467,7 @@ if __name__ == "__main__":
     parser.add_argument('--lora_rank', type=int, default=2, help="LoRA rank")
     parser.add_argument('--lora_rank_min', type=int, default=0, help="LoRA rank min")
     parser.add_argument('--lora_rank_max', type=int, default=32, help="LoRA rank max")
-    parser.add_argument('--lora_alpha', type=int, default=32, help="LoRA alpha")
+    parser.add_argument('--lora_alpha', type=int, default=16, help="LoRA alpha")
     parser.add_argument('--lora_alpha_min', type=int, default=0, help="LoRA alpha min")
     parser.add_argument('--lora_alpha_max', type=int, default=64, help="LoRA alpha max")
     parser.add_argument('--lora_dropout', type=float, default=0.00, help="LoRA dropout rate")
@@ -522,6 +535,28 @@ if __name__ == "__main__":
         'lora_head_vision': args.lora_head_vision,
     }
 
+    args.lora_params_global = {
+        'rank': args.lora_rank,
+        'rank_min': args.lora_rank_min,
+        'rank_max': args.lora_rank_max,
+        'alpha': args.lora_alpha,
+        'alpha_min': args.lora_alpha_min,
+        'alpha_max': args.lora_alpha_max,
+        'dropout': args.lora_dropout,
+        'lora_key_text': args.lora_key_text,
+        'lora_query_text': args.lora_query_text,
+        'lora_value_text': args.lora_value_text,
+        'lora_outproj_text': args.lora_outproj_text,
+        'lora_mlp_text': args.lora_mlp_text,
+        'lora_head_text': args.lora_head_text,
+        'lora_key_vision': args.lora_key_vision,
+        'lora_query_vision': args.lora_query_vision,
+        'lora_value_vision': args.lora_value_vision,
+        'lora_outproj_vision': args.lora_outproj_vision,
+        'lora_mlp_vision': args.lora_mlp_vision,
+        'lora_head_vision': args.lora_head_vision,
+    }
+
     args.lora_params_local = {
         'rank': args.lora_rank_local,
         'rank_min': args.lora_rank_min,
@@ -554,11 +589,19 @@ if __name__ == "__main__":
     
     set_random_seed(args.seed)
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.device_id
+    # os.environ["CUDA_VISIBLE_DEVICES"] = args.device_id
+
+    # if args.device == "cuda" and not torch.cuda.is_available():
+    #     print("\ncuda is not avaiable.\n")
+    #     args.device = "cpu"
 
     if args.device == "cuda" and not torch.cuda.is_available():
         print("\ncuda is not avaiable.\n")
         args.device = "cpu"
+    if args.device == "cuda" and torch.cuda.is_available():
+        print(f"Using GPU {torch.cuda.current_device()} for execution.")
+    if args.device == 'cpu':
+        print(f"Using CPU for execution.")
 
     print("=" * 50)
     
@@ -616,6 +659,21 @@ if __name__ == "__main__":
     print("ca_bottleneck_reduction: {}".format(args.ca_bottleneck_reduction))
     print("ca_text: {}".format(args.ca_text))
     print("ca_vision: {}".format(args.ca_vision))
+
+    print(f"{'-'*5} For meta {'-'*5}")
+    print("inner_steps: {}".format(args.inner_steps))
+    print("meta_inner_lr: {}".format(args.meta_inner_lr))
+    print("gumbel_temp: {}".format(args.gumbel_temp))
+    print("kl_gamma: {}".format(args.kl_gamma))
+    print("consistency_lambda: {}".format(args.consistency_lambda))
+    print("sparsity_lambda: {}".format(args.sparsity_lambda))
+    print("server_lr: {}".format(args.server_lr))
+    print("distill_temp: {}".format(args.distill_temp))
+    print("-" * 20)
+
+    print(f"{'-'*5} For dual {'-'*5}")
+    print("ref_data_fraction: {}".format(args.ref_data_fraction))
+    print("-" * 20)
     
     print(f"{'-'*5} For DAT {'-'*5}")
     print("mu_global: {}".format(args.mu_global))

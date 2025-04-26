@@ -27,8 +27,8 @@ partition = 'dir'
 # partition = 'dir10'
 # partition = 'dir001'
 
-# alg = 'fmetav'
-alg = 'fmetat'
+# alg = 'fdualv'
+alg = 'fdualt'
 # alg = 'flora2'
 
 fontsize = 24 
@@ -68,32 +68,20 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.legend(fontsize=fontsize_small, ncol=2, loc='lower right', bbox_to_anchor=(1, 0))
     plt.grid(True)
     
-    plt.savefig(f'{dataset}_{partition}_{alg}_{r}_{a}_sd_all_pfl.pdf', format='pdf', bbox_inches='tight')
+    plt.savefig(f'{dataset}_{partition}_{alg}_gs_all_pfl.pdf', format='pdf', bbox_inches='tight')
 
     plt.close()
 
-# lrs = ['5e-5', '1e-5', '5e-6', '1e-6']
+lrs = ['5e-05', '1e-05', '5e-06', '1e-06']
 # lrs = ['5e-6']                        # florav dir
-lrs = ['1e-6']                        # florat dir
+# lrs = ['5e-06']                        # florat dir
 
 # lrs = ['5e-6']                        # florav dir001
 # lrs = ['1e-6']                        # florat dir001
 
-# wds = ['1', '9e-1', '8e-1', '7e-1', '6e-1', '5e-1', '4e-1', '3e-1', '2e-1', '1e-1', '1e-2', '1e-3', '0']
 wds = ['0']
-
-# ranks = ['1', '2', '3', '4,' '5']
 ranks = ['2']
-# ranks = ['4']
-# ranks = ['8']
-
-# alphas = ['2', '4', '8', '16', '32', '64']
-# alphas = ['2']
-# alphas = ['4']
-# alphas = ['8'] 
 alphas = ['16']
-# alphas = ['32']
-# alphas = ['64']
 
 # Create filenames and labels for combinations of lr and wd
 filenames = []
@@ -104,11 +92,8 @@ seeds = ['0']
 
 for sd in seeds: 
     for lr in lrs:
-        for wd in wds:
-            for r in ranks:
-                for a in alphas:
-                    filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_wd{wd}_r{r}_a{a}_sd{sd}_all_pfl.out')
-                    labels.append(f'lr={lr}, wd={wd}, r={r}, a={a}, sd={sd}')
+        filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_sd{sd}_all_pfl.out')
+        labels.append(f'lr={lr}')
 
 colors = [blue_color, orange_color, green_color, red_color, purple_color, yellow_color, pink_color, brown_color, gray_color, olive_color, teal_color, black_color, cyan_color]
 

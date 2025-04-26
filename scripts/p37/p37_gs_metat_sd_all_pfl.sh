@@ -16,7 +16,8 @@ ranks=(2)
 alphas=(16)
 
 # Define the directory where you want to store output and error files
-log_dir="/work/LAS/jannesar-lab/dphuong/FedCLIP/logs/${dataset}"
+# log_dir="/work/LAS/jannesar-lab/dphuong/FedCLIP/logs/${dataset}"
+log_dir="/data/FedCLIP/logs/${dataset}"
 # log_dir="/scratch/bczq/FedCLIP/logs/${dataset}"
 
 # Create the directory if it doesn't exist
@@ -29,7 +30,8 @@ echo "Loading modules"
 # source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora
 # source activate /scratch/bczq/miniconda3/envs/flora
 
-cd /work/LAS/jannesar-lab/dphuong/FedCLIP/system
+# cd /work/LAS/jannesar-lab/dphuong/FedCLIP/system
+cd /data/FedCLIP/system
 # cd /scratch/bczq/FedCLIP/system
 echo "$PWD"
 echo "Started batch job at $(date)"

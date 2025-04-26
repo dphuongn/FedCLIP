@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 import time
 from flcore.clients.clientbase import Client
-from transformers import AdamW
+# from transformers import AdamW
 
 from tqdm.auto import tqdm
 from torch.utils.data import DataLoader
@@ -44,7 +44,7 @@ class clientAA(Client):
         #     weight_decay=self.weight_decay
         # )
 
-        self.optimizer = AdamW(
+        self.optimizer = torch.optim.AdamW(
             params=self.local_params,
             lr=self.learning_rate,
             betas=(self.beta1, self.beta2),

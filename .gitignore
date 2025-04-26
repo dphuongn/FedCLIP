@@ -3,4 +3,7 @@ logs/
 dataset/caltech101/
 dataset/dtd/
 dataset/pets/
+dataset/cifar10/
 fast-differential-privacy/
+__pycache__/
+*.pyc
