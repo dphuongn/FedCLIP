@@ -4,6 +4,8 @@ dataset/caltech101/
 dataset/dtd/
 dataset/pets/
 dataset/cifar10/
+dataset/aircraft/
+dataset/flowers/
 fast-differential-privacy/
 __pycache__/
 *.pyc

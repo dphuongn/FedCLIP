@@ -20,7 +20,11 @@ class FLoraDual(Server):
         self.lora_params_global = args.lora_params_global
         self.lora_params_local  = args.lora_params_local
 
-        self.learning_rate = args.local_learning_rate
+        self.distill_epochs = args.distill_epochs
+        self.distill_lr = args.distill_learning_rate
+        self.distill_temp = args.distill_temp
+        self.ref_data_fraction = args.ref_data_fraction
+
         self.beta1 = args.beta1
         self.beta2 = args.beta2
         self.eps = args.eps
@@ -65,7 +69,11 @@ class FLoraDual(Server):
                         c.train()
                     self.receive_models()
                     # self.aggregate_parameters_lora()
-                    self.aggregate_via_distillation(lr=self.learning_rate)
+                    self.aggregate_via_distillation(
+                        distill_epochs=self.distill_epochs, 
+                        distill_lr=self.distill_lr, 
+                        distill_temp=self.distill_temp
+                    )
 
             else:
                 # print(f"\n----- Round {rnd} (Personalized) -----")
@@ -80,7 +88,11 @@ class FLoraDual(Server):
                 self.evaluate()
                 self.receive_models()
                 # self.aggregate_parameters_lora()
-                self.aggregate_via_distillation(lr=self.learning_rate)
+                self.aggregate_via_distillation(
+                    distill_epochs=self.distill_epochs, 
+                    distill_lr=self.distill_lr, 
+                    distill_temp=self.distill_temp
+                )
 
             self.Budget.append(time.time() - t0)
             print(f"{'-'*10} round time: {self.Budget[-1]:.2f}s {'-'*10}")
@@ -130,10 +142,8 @@ class FLoraDual(Server):
         
         return DataLoader(ref_subset, batch_size, drop_last=False, shuffle=False)
 
-    def aggregate_via_distillation(self, distill_epochs=1, lr=1e-3):
+    def aggregate_via_distillation(self, distill_epochs=1, distill_lr=1e-3, distill_temp=1.0):
     # def aggregate_via_distillation(self, distill_epochs=1, lr=self.learning_rate):
-
-        self.ref_loader = self.load_ref_data()
 
         # 1) collect client global‐only dicts
         # client_adapters = [c.get_parameters() for c in self.selected_clients]
@@ -152,13 +162,17 @@ class FLoraDual(Server):
         # )
         opt = torch.optim.AdamW(
             params=params,
-            lr=self.learning_rate,
+            lr=distill_lr,
             betas=(self.beta1, self.beta2),
             eps=self.eps,
             weight_decay=self.weight_decay
         )
 
         kl_loss = torch.nn.KLDivLoss(reduction='batchmean')
+        T = distill_temp
+
+        # load reference data once per call
+        self.ref_loader = self.load_ref_data(ref_data_fraction=self.ref_data_fraction)
 
         # 3) Inner distillation loop
         for _ in range(distill_epochs):
@@ -190,15 +204,16 @@ class FLoraDual(Server):
                         i_feats = F.normalize(i_feats, dim=1)
                         t_feats = F.normalize(t_feats, dim=1)
                         logits = self.logit_scale * (i_feats @ t_feats.t())
+                        logits_T = logits / T
 
                         # teacher_probs.append(F.softmax(logits, dim=-1))
                         # weight each client’s distribution
-                        teacher_probs.append(w * F.softmax(logits, dim=-1))
+                        teacher_probs.append(w * F.softmax(logits_T, dim=-1))
 
                     # average over clients → [B, C]
                     # T = torch.stack(teacher_probs, dim=0).mean(0)
                     # weighted sum → [B, C]
-                    T = torch.stack(teacher_probs, dim=0).sum(0)
+                    T_distill = torch.stack(teacher_probs, dim=0).sum(0)
 
                 self.clip_model_object.model_combined.to(self.device).train()
 
@@ -210,10 +225,11 @@ class FLoraDual(Server):
                 s_i = F.normalize(s_i, dim=1)
                 s_t = F.normalize(s_t, dim=1)
                 student_logits = self.logit_scale * (s_i @ s_t.t())
-                S = F.log_softmax(student_logits, dim=-1)
+                student_logits_T = student_logits / T 
+                S_distill = F.log_softmax(student_logits_T, dim=-1)
 
                 # 3c) KL loss + step
-                loss = kl_loss(S, T)
+                loss = kl_loss(S_distill, T_distill) * (T * T)
                 opt.zero_grad()
                 loss.backward()
                 opt.step()

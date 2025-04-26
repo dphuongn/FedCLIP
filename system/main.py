@@ -333,15 +333,19 @@ if __name__ == "__main__":
                         help="τ for Gumbel-Softmax gating. Controls how “hard” your mask sampling is. You could begin with a relatively soft τ=1.0 and then anneal down toward 0.1 over rounds. If you want a fixed value, 0.5 is a good compromise between exploration (soft) and discreteness (hard).")
     parser.add_argument('-meta_support_fraction', "--meta_support_fraction", type=float, default=0.5,
                         help="fraction of local data for inner-loop support. A 50/50 split is common: 0.5. If your client datasets are very small you may want to use less (e.g. 0.3 support, 0.7 query) so the meta-gradient sees more held-out examples.")
-    
-    # fdual
-    parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=1.0)
 
     parser.add_argument('-kl_gamma', "--kl_gamma", type=float, default=1.0, help="weight on KL distillation loss")
     parser.add_argument('-consistency_lambda', "--consistency_lambda", type=float, default=0.1, help="weight on embedding‐consistency loss")
     parser.add_argument('-sparsity_lambda', "--sparsity_lambda", type=float, default=1e-4, help="L1 penalty on gates")
     parser.add_argument('-server_lr', "--server_lr", type=float, default=0.5, help="global meta‐step size (0.5=half‐way toward client mean)")
-    parser.add_argument('-distill_temp', "--distill_temp", type=float, default=3.0, help="temperature for KL divergence")
+
+    # fdual
+    parser.add_argument('-distill_epochs', "--distill_epochs", type=int, default=1)
+    parser.add_argument('-distill_learning_rate', "--distill_learning_rate", type=float, default=5e-5,
+                        help="Distill learning rate")
+    parser.add_argument('-distill_temp', "--distill_temp", type=float, default=3.0, 
+                        help="temperature for KL divergence")
+    parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=1.0)
 
     # FLoRADrop / FLoRADropReverse / FLoRASelectMost / FLoRASelectLeast
     parser.add_argument('-k_layers', "--k_layers", type=int, default=1)
@@ -672,6 +676,9 @@ if __name__ == "__main__":
     print("-" * 20)
 
     print(f"{'-'*5} For dual {'-'*5}")
+    print("distill_epochs: {}".format(args.distill_epochs))
+    print("distill_learning_rate: {}".format(args.distill_learning_rate))
+    print("distill_temp: {}".format(args.distill_temp))
     print("ref_data_fraction: {}".format(args.ref_data_fraction))
     print("-" * 20)
     
