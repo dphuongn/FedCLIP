@@ -59,6 +59,8 @@ class LinearWithDualLoRA(nn.Module):
             nn.Sigmoid()
         )
 
+        self.last_gating = None
+
         # ← new: default to normal operation
         self.global_only = False
 

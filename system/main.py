@@ -333,10 +333,14 @@ if __name__ == "__main__":
     parser.add_argument('-consistency_lambda', "--consistency_lambda", type=float, default=0.1, help="weight on embedding‐consistency loss")
     parser.add_argument('-sparsity_lambda', "--sparsity_lambda", type=float, default=1e-4, help="L1 penalty on gates")
     parser.add_argument('-server_lr', "--server_lr", type=float, default=0.5, help="global meta‐step size (0.5=half‐way toward client mean)")
-    parser.add_argument('-distill_temp', "--distill_temp", type=float, default=3.0, help="temperature for KL divergence")
 
     # fdual
-    parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=1.0)
+    parser.add_argument('-distill_epochs', "--distill_epochs", type=int, default=1)
+    parser.add_argument('-distill_learning_rate', "--distill_learning_rate", type=float, default=5e-5,
+                        help="Distill learning rate")
+    parser.add_argument('-distill_temp', "--distill_temp", type=float, default=3.0, 
+                        help="temperature for KL divergence")
+    parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=0.1)
 
     # FLoRADrop / FLoRADropReverse / FLoRASelectMost / FLoRASelectLeast
     parser.add_argument('-k_layers', "--k_layers", type=int, default=1)
@@ -461,7 +465,7 @@ if __name__ == "__main__":
     parser.add_argument('--lora_rank', type=int, default=2, help="LoRA rank")
     parser.add_argument('--lora_rank_min', type=int, default=0, help="LoRA rank min")
     parser.add_argument('--lora_rank_max', type=int, default=32, help="LoRA rank max")
-    parser.add_argument('--lora_alpha', type=int, default=32, help="LoRA alpha")
+    parser.add_argument('--lora_alpha', type=int, default=16, help="LoRA alpha")
     parser.add_argument('--lora_alpha_min', type=int, default=0, help="LoRA alpha min")
     parser.add_argument('--lora_alpha_max', type=int, default=64, help="LoRA alpha max")
     parser.add_argument('--lora_dropout', type=float, default=0.00, help="LoRA dropout rate")
@@ -658,6 +662,9 @@ if __name__ == "__main__":
     print("-" * 20)
 
     print(f"{'-'*5} For dual {'-'*5}")
+    print("distill_epochs: {}".format(args.distill_epochs))
+    print("distill_learning_rate: {}".format(args.distill_learning_rate))
+    print("distill_temp: {}".format(args.distill_temp))
     print("ref_data_fraction: {}".format(args.ref_data_fraction))
     print("-" * 20)
     
