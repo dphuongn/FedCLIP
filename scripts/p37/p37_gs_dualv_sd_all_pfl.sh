@@ -13,19 +13,6 @@ algo='fdual'
 ranks=(2)
 alphas=(16)
 
-# distill_learning_rate=(1e-5 1e-4 1e-3)
-# distill_learning_rate=[5e-5 1e-5 5e-6 1e-6)
-distill_learning_rate=(5e-3 1e-3 5e-4 1e-4)
-
-# distill_epochs=(1 2 5)
-distill_epochs=(1)
-
-# distill_temp=(0.5 1.0 3.0)
-distill_temp=(3.0)
-
-# ref_data_fraction=(0.1 0.5)
-ref_data_fraction=(1.0)
-
 # Define the directory where you want to store output and error files
 log_dir="/work/LAS/jannesar-lab/dphuong/FedCLIP/logs/${dataset}"
 # log_dir="/scratch/bczq/FedCLIP/logs/${dataset}"
@@ -44,7 +31,7 @@ echo "$PWD"
 echo "Started batch job at $(date)"
 
 # learning_rates=(5e-5 1e-5 5e-6 1e-6)
-learning_rates=(1e-6)                   # dir
+learning_rates=(5e-5)                   # dir
 # learning_rates=(1e-6)                   # dir001
 
 # weight_decays=(0 1e-3 1e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1)
@@ -54,11 +41,11 @@ weight_decays=(0)
 seeds=(0)
 
 for sd in "${seeds[@]}"; do
-    for dlr in "${distill_learning_rate[@]}"; do
-        for de in "${distill_epochs[@]}"; do
+    for r in "${ranks[@]}"; do
+        for a in "${alphas[@]}"; do
             for lr in "${learning_rates[@]}"; do
-                for dt in "${distill_temp[@]}"; do
-                    job_name="${dataset}_${partition}_${algo}t_lr${lr}_dlr${dlr}_de${de}_dt${dt}_rf${rf}_sd${sd}_all_pfl"
+                for wd in "${weight_decays[@]}"; do
+                    job_name="${dataset}_${partition}_${algo}v_lr${lr}_sd${sd}_all_pfl"
                     output_file="${log_dir}/${job_name}.out"
                     error_file="${log_dir}/${job_name}.err"
 
@@ -66,7 +53,7 @@ for sd in "${seeds[@]}"; do
                     > $output_file
                     > $error_file
 
-                    echo "Running with algo=${algo}, lr=${lr}, dlr=${dlr}, de=${de}, dt=${dt}, rf=${rf}, sd=${sd}" | tee -a $output_file
+                    echo "Running with algo=${algo}, lr=${lr} sd=${sd}" | tee -a $output_file
                     echo "GPU details saved to $output_file" | tee -a $output_file
                     echo "Running training script..." | tee -a $output_file
 
@@ -84,16 +71,12 @@ for sd in "${seeds[@]}"; do
                             -wd ${wd} \
                             --lora_rank ${r} \
                             --lora_alpha ${a} \
-                            --distill_learning_rate ${dlr}\
-                            --distill_epochs ${de}\
-                            --distill_temp ${dt}\
-                            --ref_data_fraction ${rf}\
-                            --lora_key_text \
-                            --lora_query_text \
-                            --lora_value_text \
-                            --lora_outproj_text \
-                            --lora_mlp_text \
-                            --lora_head_text \
+                            --lora_key_vision \
+                            --lora_query_vision \
+                            --lora_value_vision \
+                            --lora_outproj_vision \
+                            --lora_mlp_vision \
+                            --lora_head_vision \
                             -pfl \
                             -sd ${sd}\
                         >> $output_file 2>> $error_file
