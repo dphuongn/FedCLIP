@@ -2,7 +2,9 @@
 logs/
 dataset/caltech101/
 dataset/dtd/
+dataset/dtd_ref/
 dataset/pets/
+dataset/pets_ref/
 dataset/aircraft/
 dataset/flowers/
 dataset/cifar10/

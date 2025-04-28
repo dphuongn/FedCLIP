@@ -54,10 +54,10 @@ class ClientDualLORA(Client):
 
         self.logit_scale = self.clip_model.state_dict()['logit_scale'].exp()
 
-    def set_parameters(self, global_dict):
-        # load server’s global adapter
-        for k, p in self.global_adapters.items():
-            p.data.copy_(global_dict[k].data)
+    # def set_parameters(self, global_dict):
+    #     # load server’s global adapter
+    #     for k, p in self.global_adapters.items():
+    #         p.data.copy_(global_dict[k].data)
 
     def get_parameters(self):
         # send back only global adapter
