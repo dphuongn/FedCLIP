@@ -19,7 +19,7 @@ lightblue_color = '#87ceeb'
 magenta_color = '#ff00ff'   
 cyan_color = '#00ffff'
 
-dataset = 'd47'
+dataset = 'f102'
 
 # partition = 'iid'
 partition = 'dir'
@@ -62,7 +62,7 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     
-    plt.title(f'DTD | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
+    plt.title(f'Flowers | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
     plt.xlabel('Round', fontsize=fontsize)
     plt.ylabel('Top-1 accuracy (%)', fontsize=fontsize)
     plt.legend(fontsize=fontsize_small, ncol=2, loc='lower right', bbox_to_anchor=(1, 0))
@@ -73,7 +73,9 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.close()
 
 lrs = ['5e-05', '1e-05', '5e-06', '1e-06']
-# lrs = ['1e-06']
+lrs = ['0.0005', '0.0001', '5e-05', '1e-05']
+lrs = ['0.0001', '5e-05', '1e-05']
+# lrs = ['5e-05']
 # lrs = ['5e-6']                        # florav dir
 # lrs = ['5e-06']                        # florat dir
 
@@ -97,6 +99,7 @@ distill_temp = ['3.0']
 
 # ref_data_fraction = ['0.1', '0.2', '0.5', '1.0']
 ref_data_fraction = ['0.1']
+ref_data_fraction = ['1.0']
 
 # Create filenames and labels for combinations of lr and wd
 filenames = []

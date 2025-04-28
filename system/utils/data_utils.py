@@ -521,22 +521,22 @@ def read_client_data_clip(dataset, idx, processor, class_names, device, is_train
         if 'cifar10' or 'tiny' or 'cars' or 'fmnist' or 'caltech101' or 'sun397' or 'pacs' or 'vlcs' or 'office_home' or 'terra_incognita' in dataset:
             test_dataset = CIFAR10Dataset(test_data, processor, device, class_names)
             
-        elif dataset == 'pets':
+        elif 'pets' in dataset:
             test_dataset = PETSDataset(test_data, processor, device, class_names)
             
-        elif dataset == 'flowers':
+        elif 'flowers' in dataset:
             test_dataset = OXFORDFLOWERSDataset(test_data, processor, device, class_names)
             
         elif 'country211' in dataset:
             test_dataset = COUNTRY211Dataset(test_data, processor, device, class_names)
         
-        elif dataset == 'aircraft':
+        elif 'aircraft' in dataset:
             test_dataset = AIRCRAFTDataset(test_data, processor, device, class_names)
             
         elif 'food101' in dataset:
             test_dataset = FOOD101Dataset(test_data, processor, device, class_names)
             
-        elif dataset == 'dtd':
+        elif 'dtd' in dataset:
             test_dataset = DTDDataset(test_data, processor, device, class_names)
             
         elif dataset == 'eurosat':

@@ -23,7 +23,7 @@ if num_devices < 1:
     quit()
 
 
-dataset = "p37"
+dataset = "d47"
 partition = "dir"
 algo = "fdual"
 
@@ -47,7 +47,6 @@ distill_temp = [3.0]
 # ref_data_fraction = [0.1, 0.2, 0.5, 1.0]
 ref_data_fraction = [0.1]
 
-
 seeds = [0]
 
 # Define log directory
@@ -66,7 +65,7 @@ def run_script(lr, dlr, de, dt, rf, seed, device):
     """Runs the script with assigned parameters on a given GPU"""
     global gpu_usage
 
-    job_name = f"{dataset}_{partition}_{algo}v_lr{lr}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{seed}_all_pfl"
+    job_name = f"{dataset}_{partition}_{algo}t_lr{lr}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{seed}_all_pfl"
     output_file = log_dir / f"{job_name}.out"
     error_file = log_dir / f"{job_name}.err"
 
@@ -85,12 +84,12 @@ def run_script(lr, dlr, de, dt, rf, seed, device):
         "-ref_data_fraction", str(rf),
         "--lora_rank", "2",
         "--lora_alpha", "16",
-        "--lora_key_vision",
-	    "--lora_query_vision",
-	    "--lora_value_vision",
-	    "--lora_outproj_vision",
-	    "--lora_mlp_vision",
-	    "--lora_head_vision",
+        "--lora_key_text",
+	    "--lora_query_text",
+	    "--lora_value_text",
+	    "--lora_outproj_text",
+	    "--lora_mlp_text",
+	    "--lora_head_text",
         "-pfl",
         "-sd", str(seed)
     ]

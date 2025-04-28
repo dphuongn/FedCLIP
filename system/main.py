@@ -340,12 +340,13 @@ if __name__ == "__main__":
     parser.add_argument('-server_lr', "--server_lr", type=float, default=0.5, help="global meta‐step size (0.5=half‐way toward client mean)")
 
     # fdual
+    parser.add_argument('-rbs', "--batch_size_ref", type=int, default=8)
     parser.add_argument('-distill_epochs', "--distill_epochs", type=int, default=1)
     parser.add_argument('-distill_learning_rate', "--distill_learning_rate", type=float, default=5e-5,
                         help="Distill learning rate")
     parser.add_argument('-distill_temp', "--distill_temp", type=float, default=3.0, 
                         help="temperature for KL divergence")
-    parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=1.0)
+    parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=0.1)
 
     # FLoRADrop / FLoRADropReverse / FLoRASelectMost / FLoRASelectLeast
     parser.add_argument('-k_layers', "--k_layers", type=int, default=1)
@@ -676,6 +677,7 @@ if __name__ == "__main__":
     print("-" * 20)
 
     print(f"{'-'*5} For dual {'-'*5}")
+    print("batch_size_ref: {}".format(args.batch_size_ref))
     print("distill_epochs: {}".format(args.distill_epochs))
     print("distill_learning_rate: {}".format(args.distill_learning_rate))
     print("distill_temp: {}".format(args.distill_temp))

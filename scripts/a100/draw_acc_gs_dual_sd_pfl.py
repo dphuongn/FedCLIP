@@ -19,7 +19,7 @@ lightblue_color = '#87ceeb'
 magenta_color = '#ff00ff'   
 cyan_color = '#00ffff'
 
-dataset = 'd47'
+dataset = 'a100'
 
 # partition = 'iid'
 partition = 'dir'
@@ -62,7 +62,7 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     
-    plt.title(f'DTD | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
+    plt.title(f'Aircraft | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
     plt.xlabel('Round', fontsize=fontsize)
     plt.ylabel('Top-1 accuracy (%)', fontsize=fontsize)
     plt.legend(fontsize=fontsize_small, ncol=2, loc='lower right', bbox_to_anchor=(1, 0))
@@ -72,8 +72,8 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
 
     plt.close()
 
-lrs = ['5e-05', '1e-05', '5e-06', '1e-06']
-# lrs = ['1e-06']
+# lrs = ['5e-05', '1e-05', '5e-06', '1e-06']
+lrs = ['5e-05']
 # lrs = ['5e-6']                        # florav dir
 # lrs = ['5e-06']                        # florat dir
 
@@ -84,19 +84,24 @@ wds = ['0']
 ranks = ['2']
 alphas = ['16']
 
+# batch_size_ref = ['4', '8', '16', '32']
+batch_size_ref = ['16', '32']
+
 # distill_learning_rate = ['1e-05', '1e-04', '1e-03']
 # distill_learning_rate = ['1e-05']
 # distill_learning_rate = ['5e-05', '1e-05', '5e-06', '1e-06']
 distill_learning_rate = ['5e-05']
 # distill_learning_rate = ['0.005', '0.001', '0.0005', '0.0001']
 
-distill_epochs = ['1']
+# distill_epochs = ['1']
+distill_epochs = ['2', '5']
 
 # distill_temp = ['0.5', '1.0', '3.0']
 distill_temp = ['3.0']
 
 # ref_data_fraction = ['0.1', '0.2', '0.5', '1.0']
-ref_data_fraction = ['0.1']
+# ref_data_fraction = ['0.1']
+ref_data_fraction = ['1.0']
 
 # Create filenames and labels for combinations of lr and wd
 filenames = []
@@ -107,12 +112,22 @@ seeds = ['0']
 
 for sd in seeds: 
     for lr in lrs:
-        for dlr in distill_learning_rate:
-            for de in distill_epochs:
-                for dt in distill_temp:
-                    for rf in ref_data_fraction:
-                        filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl.out')
-                        labels.append(f'lr={lr}, dlr={dlr}, de={de}, dt={dt}, rf={rf}')
+        for rbs in batch_size_ref:
+            for dlr in distill_learning_rate:
+                for de in distill_epochs:
+                    for dt in distill_temp:
+                        for rf in ref_data_fraction:
+                            filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl.out')
+                            labels.append(f'lr={lr}, rbs={rbs}, dlr={dlr}, de={de}, dt={dt}, rf={rf}')
+
+# for sd in seeds: 
+#     for lr in lrs:
+#         for dlr in distill_learning_rate:
+#             for de in distill_epochs:
+#                 for dt in distill_temp:
+#                     for rf in ref_data_fraction:
+#                         filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl.out')
+#                         labels.append(f'lr={lr}, dlr={dlr}, de={de}, dt={dt}, rf={rf}')
 
 colors = [blue_color, orange_color, green_color, red_color, purple_color, yellow_color, pink_color, brown_color, gray_color, olive_color, teal_color, black_color, cyan_color]
 

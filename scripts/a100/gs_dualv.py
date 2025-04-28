@@ -23,7 +23,7 @@ if num_devices < 1:
     quit()
 
 
-dataset = "p37"
+dataset = "a100"
 partition = "dir"
 algo = "fdual"
 
@@ -32,6 +32,8 @@ algo = "fdual"
 # Define hyperparameter search space
 learning_rates = [5e-5, 1e-5, 5e-6, 1e-6]
 # learning_rates = [1e-6]
+
+batch_size_ref = [4, 8, 16, 32]
 
 # distill_learning_rate = [1e-5, 1e-4, 1e-3]
 # distill_learning_rate = [5e-5, 1e-5, 5e-6, 1e-6]
@@ -47,7 +49,6 @@ distill_temp = [3.0]
 # ref_data_fraction = [0.1, 0.2, 0.5, 1.0]
 ref_data_fraction = [0.1]
 
-
 seeds = [0]
 
 # Define log directory
@@ -62,11 +63,11 @@ gpu_usage = {device: False for device in range(num_devices)}
 used_combinations = set()
 
 
-def run_script(lr, dlr, de, dt, rf, seed, device):
+def run_script(lr, rbs, dlr, de, dt, rf, seed, device):
     """Runs the script with assigned parameters on a given GPU"""
     global gpu_usage
 
-    job_name = f"{dataset}_{partition}_{algo}v_lr{lr}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{seed}_all_pfl"
+    job_name = f"{dataset}_{partition}_{algo}v_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{seed}_all_pfl"
     output_file = log_dir / f"{job_name}.out"
     error_file = log_dir / f"{job_name}.err"
 
@@ -74,11 +75,12 @@ def run_script(lr, dlr, de, dt, rf, seed, device):
         "python", str(main_script),
         "-data", str(dataset),
         "-algo", str(algo),
-        "-gr", "50",
+        "-gr", "100",
         "-did", str(device),  # Pass GPU ID as argument
         "-nc", "10",
         "-lbs", "32",
         "-lr", str(lr),
+        "-rbs", str(rbs),
         "-distill_learning_rate", str(dlr),
         "-distill_epochs", str(de),
         "-distill_temp", str(dt),
@@ -138,9 +140,9 @@ def get_available_gpu():
 threads = []
 
 # Generate all combinations of hyperparameters
-for params in itertools.product(learning_rates, distill_learning_rate, distill_epochs, distill_temp, ref_data_fraction, seeds):
+for params in itertools.product(learning_rates, batch_size_ref, distill_learning_rate, distill_epochs, distill_temp, ref_data_fraction, seeds):
     # lr, seed = params
-    lr, dlr, de, dt, rf, seed = params
+    lr, rbs, dlr, de, dt, rf, seed = params
 
     # Check if the combination has been used
     if params in used_combinations:
@@ -151,7 +153,7 @@ for params in itertools.product(learning_rates, distill_learning_rate, distill_e
     device = get_available_gpu()
 
     # Start a thread to run the script
-    thread = threading.Thread(target=run_script, args=(lr, dlr, de, dt, rf, seed, device))
+    thread = threading.Thread(target=run_script, args=(lr, rbs, dlr, de, dt, rf, seed, device))
     thread.start()
     threads.append(thread)
 

@@ -23,7 +23,7 @@ if num_devices < 1:
     quit()
 
 
-dataset = "p37"
+dataset = "f102"
 partition = "dir"
 algo = "fdual"
 
@@ -46,7 +46,6 @@ distill_temp = [3.0]
 
 # ref_data_fraction = [0.1, 0.2, 0.5, 1.0]
 ref_data_fraction = [0.1]
-
 
 seeds = [0]
 
@@ -74,7 +73,7 @@ def run_script(lr, dlr, de, dt, rf, seed, device):
         "python", str(main_script),
         "-data", str(dataset),
         "-algo", str(algo),
-        "-gr", "50",
+        "-gr", "100",
         "-did", str(device),  # Pass GPU ID as argument
         "-nc", "10",
         "-lbs", "32",

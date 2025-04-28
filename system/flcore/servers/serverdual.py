@@ -20,6 +20,7 @@ class FLoraDual(Server):
         self.lora_params_global = args.lora_params_global
         self.lora_params_local  = args.lora_params_local
 
+        self.batch_size_ref = args.batch_size_ref
         self.distill_epochs = args.distill_epochs
         self.distill_lr = args.distill_learning_rate
         self.distill_temp = args.distill_temp
@@ -130,7 +131,8 @@ class FLoraDual(Server):
     def load_ref_data(self, batch_size=None, ref_data_fraction=None):
         if batch_size == None:
             batch_size = self.batch_size_ref
-        ref_data = read_client_data_clip('cifar10', 1, self.processor, self.class_names, self.device, is_train=True)
+        self.data_ref = self.dataset + '_ref'
+        ref_data = read_client_data_clip(self.data_ref, 0, self.processor, self.class_names, self.device, is_train=True)
         
         if ref_data_fraction is not None:
             self.ref_samples = int(len(ref_data) * self.ref_data_fraction)
@@ -234,12 +236,12 @@ class FLoraDual(Server):
                 loss.backward()
                 opt.step()
 
-            # 4) restore local LoRA & gating for next FL round
-            self.clip_model_object.set_global_only(False)
-            self.clip_model_object.unfreeze_local_and_gate()
+        # 4) restore local LoRA & gating for next FL round
+        self.clip_model_object.set_global_only(False)
+        self.clip_model_object.unfreeze_local_and_gate()
 
-            teacher.to("cpu")
-            self.clip_model_object.model_combined.to("cpu")
+        teacher.to("cpu")
+        self.clip_model_object.model_combined.to("cpu")
 
     def aggregate_parameters_lora(self):
         assert (len(self.uploaded_models) > 0)
