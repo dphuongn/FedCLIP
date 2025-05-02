@@ -233,8 +233,8 @@ class clientLORADATTRUE(Client):
                         reduction='batchmean'
                     )
                     
-                    print(f'kl_div_loss_image: {kl_div_loss_image}')
-                    print(f'kl_div_loss_text: {kl_div_loss_text}')
+                    # print(f'kl_div_loss_image: {kl_div_loss_image}')
+                    # print(f'kl_div_loss_text: {kl_div_loss_text}')
 
                     kl_div_loss = (kl_div_loss_image + kl_div_loss_text) / 2
                     
@@ -269,8 +269,8 @@ class clientLORADATTRUE(Client):
         self.clip_model_global.to("cpu")            
         self.clip_model_local.to("cpu")
         
-        print(f'self.mu_global: {self.mu_global}')
-        print(f'self.mu_local: {self.mu_local}')
+        # print(f'self.mu_global: {self.mu_global}')
+        # print(f'self.mu_local: {self.mu_local}')
 
         end = time.time()
         elapsed = end-start

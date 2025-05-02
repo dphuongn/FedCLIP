@@ -98,7 +98,7 @@ class clientSORADUALHETERO(Client):
             weight_decay=self.weight_decay,
         )
         
-        self.mu_local_optimizer = AdamW(
+        self.mu_local_optimizer = torch.optim.AdamW(
             params=[self.mu_local],
             lr=self.mu_learning_rate_local, 
             betas=(self.beta1, self.beta2), 
@@ -107,7 +107,7 @@ class clientSORADUALHETERO(Client):
         )
         
         # Optimizers for both global LoRA layers
-        self.global_optimizer = AdamW(
+        self.global_optimizer = torch.optim.AdamW(
             params=self.global_lora_params, 
             lr=self.learning_rate, 
             betas=(self.beta1, self.beta2), 
@@ -115,7 +115,7 @@ class clientSORADUALHETERO(Client):
             weight_decay=self.weight_decay
         )
         
-        self.mu_global_optimizer = AdamW(
+        self.mu_global_optimizer = torch.optim.AdamW(
             params=[self.mu_global],
             lr=self.mu_learning_rate_global, 
             betas=(self.beta1, self.beta2), 
@@ -404,208 +404,6 @@ class clientSORADUALHETERO(Client):
             print(f"Avg CE Loss Global: {avg_cross_entropy_loss_global:.4f}, Avg KL Loss Global: {avg_kl_div_loss_global:.4f}, Avg Total Loss Global: {avg_total_loss_global:.4f}")
         
                         
-        self.clip_model_global.to("cpu")            
-        self.clip_model_local.to("cpu")
-        
-        print(f'self.mu_global: {self.mu_global}')
-        print(f'self.mu_local: {self.mu_local}')
-
-        end = time.time()
-        elapsed = end-start
-        # print(f"Number of training samples: {train_num}")
-        print(f"Time elapsed {elapsed/60:.2f} min")
-        print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
-
-        if self.learning_rate_decay:
-            self.global_learning_rate_scheduler.step()
-            self.local_learning_rate_scheduler.step()
-
-        self.train_time_cost['num_rounds'] += 1
-        self.train_time_cost['total_cost'] += elapsed
-
-
-    def finetune(self):
-            
-        trainloader = self.load_train_data()
-        self.clip_model_global.to(self.device)
-        self.clip_model_local.to(self.device)
-        
-        train_num = 0
-        
-        start = time.time()
-
-        for epoch in range(self.fine_tuning_epoch_new):
-            with tqdm(trainloader, total=len(trainloader)) as pbar:  # Initialize pbar here
-                for i, batch in enumerate(pbar):
-
-                    images, target, texts = batch
-                    
-                    images = images.to(self.device)
-                    # target = target.to(self.device)
-                    texts = texts.to(self.device)
-
-                    # texts is a dictionary, extract the required tensors
-                    input_ids = texts['input_ids'].squeeze(1) # Remove the extra dimension
-                    attention_mask = texts['attention_mask'].squeeze(1) # Remove the extra dimension
-                    
-                    
-                    # start update local LoRA ------------------------------------------------------------
-                    self.clip_model_global.eval()
-                    self.clip_model_local.train()
-                    
-                    # Freeze the global LoRA layers
-                    for param in self.lora_layers_global.values():
-                        param.requires_grad = False
-                    
-                    # Obtain features from both global and local models
-                    with torch.no_grad():  # No gradient computation for global model
-                        image_features_global = self.clip_model_global.get_image_features(images).float()
-                        text_features_global = self.clip_model_global.get_text_features(input_ids=input_ids, attention_mask=attention_mask).float()
-                    image_features_local = self.clip_model_local.get_image_features(images).float()
-                    text_features_local = self.clip_model_local.get_text_features(input_ids=input_ids, attention_mask=attention_mask).float()
-
-                    # Normalize features
-                    image_features_global = image_features_global / image_features_global.norm(dim=1, keepdim=True)
-                    text_features_global = text_features_global / text_features_global.norm(dim=1, keepdim=True)
-                    image_features_local = image_features_local / image_features_local.norm(dim=1, keepdim=True)
-                    text_features_local = text_features_local / text_features_local.norm(dim=1, keepdim=True)
-                    
-                    # Compute logits for both models
-                    logits_per_image_global = self.logit_scale * image_features_global @ text_features_global.t()
-                    logits_per_text_global = logits_per_image_global.t()
-                    logits_per_image_local = self.logit_scale * image_features_local @ text_features_local.t()
-                    logits_per_text_local = logits_per_image_local.t()
-                    
-                    # Compute cross-entropy loss for client-specific model
-                    ground_truth = torch.arange(len(images), dtype=torch.long, device=self.device)
-                    cross_entropy_loss = (self.loss(logits_per_image_local, ground_truth) + self.loss(logits_per_text_local, ground_truth)) / 2
-
-                    # Compute KL divergence loss between client and global models
-                    kl_div_loss_image = torch.nn.functional.kl_div(
-                        logits_per_image_local.log_softmax(dim=-1),
-                        logits_per_image_global.softmax(dim=-1),
-                        reduction='batchmean'
-                    )
-                    kl_div_loss_text = torch.nn.functional.kl_div(
-                        logits_per_text_local.log_softmax(dim=-1),
-                        logits_per_text_global.softmax(dim=-1),
-                        reduction='batchmean'
-                    )
-
-                    kl_div_loss = (kl_div_loss_image + kl_div_loss_text) / 2
-                    
-                    # Combine losses
-                    total_loss = cross_entropy_loss + kl_div_loss
-                    
-                    # total_loss = (1 - self.mu_local) * cross_entropy_loss + self.mu_local * kl_div_loss
-                    
-                    # Optimize Client LoRA
-                    # Backward pass
-                    self.sparse_optimizer.zero_grad()  # Zero out gradients for gate parameters
-                    self.local_optimizer.zero_grad()  # Zero out gradients for W_a and W_b
-                    # self.mu_local_optimizer.zero_grad()
-                    total_loss.backward()
-                    
-                    # Optimizer step for sparse gates
-                    self.sparse_optimizer.step()
-                    # self.sparse_optimizer.step_lambda()  # Update lambda for the sparse gates
-                    
-                    # Optimizer step for W_a and W_b
-                    torch.nn.utils.clip_grad_norm_(self.lora_params_local, max_norm=1.0)
-                    self.local_optimizer.step()
-                    
-                    # self.mu_local_optimizer.step()
-                    
-                    # Clamp mu_local to the range [0, 1]
-                    # with torch.no_grad():
-                    #     self.mu_local.clamp_(0, 1)
-
-                    pbar.set_description(f"Epoch {epoch+1}/{self.local_epochs}, Local CE Loss: {cross_entropy_loss.item():.4f}, Local KL Loss: {kl_div_loss.item():.4f}, Local Total Loss: {total_loss.item():.4f}")
-                    
-                    # Unfreeze the global LoRA layers
-                    for param in self.lora_layers_global.values():
-                        param.requires_grad = True
-                    
-                    # end update local LoRA ------------------------------------------------------------
-                    
-                    
-                    # start update global LoRA ------------------------------------------------------------
-                    self.clip_model_local.eval()
-                    self.clip_model_global.train()
-                    
-                    # Freeze the local LoRA layers
-                    for param in self.lora_layers_local.values():
-                        param.requires_grad = False
-                        
-                    # Obtain features from both global and local models
-                    with torch.no_grad():  # No gradient computation for local model
-                        image_features_local = self.clip_model_local.get_image_features(images).float()
-                        text_features_local = self.clip_model_local.get_text_features(input_ids=input_ids, attention_mask=attention_mask).float()
-                    
-                    image_features_global = self.clip_model_global.get_image_features(images).float()
-                    text_features_global = self.clip_model_global.get_text_features(input_ids=input_ids, attention_mask=attention_mask).float()
-
-                    # Normalize features
-                    image_features_global = image_features_global / image_features_global.norm(dim=1, keepdim=True)
-                    text_features_global = text_features_global / text_features_global.norm(dim=1, keepdim=True)
-                    image_features_local = image_features_local / image_features_local.norm(dim=1, keepdim=True)
-                    text_features_local = text_features_local / text_features_local.norm(dim=1, keepdim=True)
-                    
-                    # Compute logits for both models
-                    logits_per_image_global = self.logit_scale * image_features_global @ text_features_global.t()
-                    logits_per_text_global = logits_per_image_global.t()
-                    logits_per_image_local = self.logit_scale * image_features_local @ text_features_local.t()
-                    logits_per_text_local = logits_per_image_local.t()
-                    
-                    # Compute cross-entropy loss for global model
-                    ground_truth = torch.arange(len(images), dtype=torch.long, device=self.device)
-                    cross_entropy_loss = (self.loss(logits_per_image_global, ground_truth) + self.loss(logits_per_text_global, ground_truth)) / 2
-
-                    # Compute KL divergence loss between global and client models
-                    kl_div_loss_image = torch.nn.functional.kl_div(
-                        logits_per_image_global.log_softmax(dim=-1),
-                        logits_per_image_local.softmax(dim=-1),
-                        reduction='batchmean'
-                    )
-                    kl_div_loss_text = torch.nn.functional.kl_div(
-                        logits_per_text_global.log_softmax(dim=-1),
-                        logits_per_text_local.softmax(dim=-1),
-                        reduction='batchmean'
-                    )
-                    
-                    print(f'kl_div_loss_image: {kl_div_loss_image}')
-                    print(f'kl_div_loss_text: {kl_div_loss_text}')
-
-                    kl_div_loss = (kl_div_loss_image + kl_div_loss_text) / 2
-                    
-                    # Combine losses
-                    total_loss = cross_entropy_loss + kl_div_loss
-                    
-                    # total_loss = (1 - self.mu_global) * cross_entropy_loss + self.mu_global * kl_div_loss
-                    
-                    # Optimize global LoRA
-                    self.global_optimizer.zero_grad()
-                    # self.mu_global_optimizer.zero_grad()
-                    total_loss.backward()
-                    torch.nn.utils.clip_grad_norm_(self.global_lora_params, max_norm=1.0)
-                    self.global_optimizer.step()
-                    # self.mu_global_optimizer.step()
-                    
-                    # Clamp mu_global to the range [0, 1]
-                    # with torch.no_grad():
-                    #     self.mu_global.clamp_(0, 1)
-
-                    pbar.set_description(f"Epoch {epoch+1}/{self.local_epochs}, Global CE Loss: {cross_entropy_loss.item():.4f}, Global KL Loss: {kl_div_loss.item():.4f}, Global Total Loss: {total_loss.item():.4f}")
-                    
-                    # Unfreeze the local LoRA layers
-                    for param in self.lora_layers_local.values():
-                        param.requires_grad = True
-                    
-                    # end update global LoRA ------------------------------------------------------------
-                    
-                    
-                    train_num += target.size(0)
-                    
         self.clip_model_global.to("cpu")            
         self.clip_model_local.to("cpu")
         

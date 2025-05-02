@@ -33,6 +33,12 @@ algo = "fdual"
 learning_rates = [5e-5, 1e-5, 5e-6, 1e-6]
 # learning_rates = [1e-6]
 
+# batch_size_ref=(4 8 16 32)
+# batch_size_ref=(4)
+# batch_size_ref=(8)
+# batch_size_ref=(16)
+batch_size_ref=(32)
+
 # distill_learning_rate = [1e-5, 1e-4, 1e-3]
 # distill_learning_rate = [5e-5, 1e-5, 5e-6, 1e-6]
 # distill_learning_rate = [5e-3, 1e-3, 5e-4, 1e-4]
@@ -61,11 +67,11 @@ gpu_usage = {device: False for device in range(num_devices)}
 used_combinations = set()
 
 
-def run_script(lr, dlr, de, dt, rf, seed, device):
+def run_script(lr, rbs, dlr, de, dt, rf, seed, device):
     """Runs the script with assigned parameters on a given GPU"""
     global gpu_usage
 
-    job_name = f"{dataset}_{partition}_{algo}v_lr{lr}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{seed}_all_pfl"
+    job_name = f"{dataset}_{partition}_{algo}v_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{seed}_all_pfl"
     output_file = log_dir / f"{job_name}.out"
     error_file = log_dir / f"{job_name}.err"
 
@@ -78,6 +84,7 @@ def run_script(lr, dlr, de, dt, rf, seed, device):
         "-nc", "10",
         "-lbs", "32",
         "-lr", str(lr),
+        "-rbs", str(rbs),
         "-distill_learning_rate", str(dlr),
         "-distill_epochs", str(de),
         "-distill_temp", str(dt),

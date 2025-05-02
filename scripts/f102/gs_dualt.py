@@ -46,8 +46,8 @@ distill_epochs = [1]
 distill_temp = [3.0]
 
 # ref_data_fraction = [0.1, 0.2, 0.5, 1.0]
-# ref_data_fraction = [0.1]
-ref_data_fraction = [1.0]
+ref_data_fraction = [0.1]
+# ref_data_fraction = [1.0]
 
 seeds = [0]
 

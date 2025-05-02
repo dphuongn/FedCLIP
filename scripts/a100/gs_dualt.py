@@ -31,10 +31,12 @@ algo = "fdual"
 
 # Define hyperparameter search space
 # learning_rates = [5e-5, 1e-5, 5e-6, 1e-6]
-learning_rates = [5e-5]
+# learning_rates = [5e-5]
+learning_rates = [1e-3, 5e-4, 1e-4, 5e-5]
 
 # batch_size_ref = [4, 8, 16, 32]
-batch_size_ref = [16, 32]
+# batch_size_ref = [16, 32]
+batch_size_ref = [32]
 
 # distill_learning_rate = [1e-5, 1e-4, 1e-3]
 # distill_learning_rate = [5e-5, 1e-5, 5e-6, 1e-6]
@@ -42,14 +44,14 @@ batch_size_ref = [16, 32]
 distill_learning_rate = [5e-5]
 
 # distill_epochs = [1, 2, 5]
-# distill_epochs = [1]
-distill_epochs = [2, 5]
+distill_epochs = [1]
+# distill_epochs = [2, 5]
 
 # distill_temp = [0.5, 1.0, 3.0]
 distill_temp = [3.0]
 
 # ref_data_fraction = [0.1, 0.2, 0.5, 1.0]
-ref_data_fraction = [1.0]
+ref_data_fraction = [0.1]
 
 seeds = [0]
 

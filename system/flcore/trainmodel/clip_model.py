@@ -1784,12 +1784,12 @@ class CLIPModelWithLoRACombined(torch.nn.Module):
         # Freeze all parameters of lora_layers_global_copy
         self._freeze_lora_global_copy()
         
-        print(f'self.lora_layers_global: {self.lora_layers_global}')
-        print(f'self.lora_layers_global_copy: {self.lora_layers_global_copy}')
-        print(f'self.lora_layers_local: {self.lora_layers_local}')
+        # print(f'self.lora_layers_global: {self.lora_layers_global}')
+        # print(f'self.lora_layers_global_copy: {self.lora_layers_global_copy}')
+        # print(f'self.lora_layers_local: {self.lora_layers_local}')
         
         
-        print(f'self.model_combined: {self.model_combined}')
+        # print(f'self.model_combined: {self.model_combined}')
         
 
     def _apply_lora_global(self):

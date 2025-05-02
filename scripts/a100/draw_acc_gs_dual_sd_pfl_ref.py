@@ -19,7 +19,7 @@ lightblue_color = '#87ceeb'
 magenta_color = '#ff00ff'   
 cyan_color = '#00ffff'
 
-dataset = 'f102'
+dataset = 'a100'
 
 # partition = 'iid'
 # partition = 'dir'
@@ -62,24 +62,23 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     
-    plt.title(f'Flowers | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
+    plt.title(f'Aircraft | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
     plt.xlabel('Round', fontsize=fontsize)
     plt.ylabel('Top-1 accuracy (%)', fontsize=fontsize)
     plt.legend(fontsize=fontsize_small, ncol=2, loc='lower right', bbox_to_anchor=(1, 0))
     plt.grid(True)
     
-    plt.savefig(f'{dataset}_{partition}_{alg}_gs_all_pfl.pdf', format='pdf', bbox_inches='tight')
+    plt.savefig(f'{dataset}_{partition}_{alg}_gs_all_pfl_ref.pdf', format='pdf', bbox_inches='tight')
 
     plt.close()
 
 # lrs = ['5e-05', '1e-05', '5e-06', '1e-06']
-# lrs = ['0.0005', '0.0001', '5e-05', '1e-05']
-# lrs = ['0.0001', '5e-05', '1e-05']
-# lrs = ['5e-05']
+# lrs = ['5e-5', '1e-5', '5e-6', '1e-6']
+# lrs = ['0.001', '0.0005', '0.0001', '5e-05']
 
-# lrs = ['1e-5']                        # florav dir
+# lrs = ['5e-5']                        # florav dir
 
-lrs = ['1e-5']                        # florav dir001
+lrs = ['5e-5']                        # florav dir001
 
 wds = ['0']
 ranks = ['2']
@@ -97,6 +96,7 @@ distill_learning_rate = ['5e-5']
 # distill_learning_rate = ['0.005', '0.001', '0.0005', '0.0001']
 
 distill_epochs = ['1']
+# distill_epochs = ['2', '5']
 
 # distill_temp = ['0.5', '1.0', '3.0']
 distill_temp = ['3.0']
@@ -110,7 +110,7 @@ filenames = []
 labels = []
 
 seeds = ['0', '1', '42']
-# seeds = ['0', '1']
+# seeds = ['0']
 
 for sd in seeds: 
     for lr in lrs:
@@ -119,8 +119,17 @@ for sd in seeds:
                 for de in distill_epochs:
                     for dt in distill_temp:
                         for rf in ref_data_fraction:
-                            filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl.out')
+                            filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl_ref.out')
                             labels.append(f'lr={lr}, rbs={rbs}, dlr={dlr}, de={de}, dt={dt}, rf={rf}, sd={sd}')
+
+# for sd in seeds: 
+#     for lr in lrs:
+#         for dlr in distill_learning_rate:
+#             for de in distill_epochs:
+#                 for dt in distill_temp:
+#                     for rf in ref_data_fraction:
+#                         filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl.out')
+#                         labels.append(f'lr={lr}, dlr={dlr}, de={de}, dt={dt}, rf={rf}')
 
 colors = [blue_color, orange_color, green_color, red_color, purple_color, yellow_color, pink_color, brown_color, gray_color, olive_color, teal_color, black_color, cyan_color]
 

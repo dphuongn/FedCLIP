@@ -14,7 +14,7 @@ from utils.data_utils import read_client_data_clip
 from flcore.trainmodel.clip_model_dual import *
 
 
-class FLoraDual(Server):
+class FLoraDualNoDistillation(Server):
     def __init__(self, args, times):
         super().__init__(args, times)
         # two sets of LoRA params
@@ -71,12 +71,12 @@ class FLoraDual(Server):
                     for c in self.selected_clients: 
                         c.train()
                     self.receive_models()
-                    # self.aggregate_parameters_lora()
-                    self.aggregate_via_distillation(
-                        distill_epochs=self.distill_epochs, 
-                        distill_lr=self.distill_lr, 
-                        distill_temp=self.distill_temp
-                    )
+                    self.aggregate_parameters_lora()
+                    # self.aggregate_via_distillation(
+                    #     distill_epochs=self.distill_epochs, 
+                    #     distill_lr=self.distill_lr, 
+                    #     distill_temp=self.distill_temp
+                    # )
 
             else:
                 # print(f"\n----- Round {rnd} (Personalized) -----")
@@ -90,12 +90,12 @@ class FLoraDual(Server):
                 print("\n-------------Evaluate personalized models-------------")
                 self.evaluate()
                 self.receive_models()
-                # self.aggregate_parameters_lora()
-                self.aggregate_via_distillation(
-                    distill_epochs=self.distill_epochs, 
-                    distill_lr=self.distill_lr, 
-                    distill_temp=self.distill_temp
-                )
+                self.aggregate_parameters_lora()
+                # self.aggregate_via_distillation(
+                #     distill_epochs=self.distill_epochs, 
+                #     distill_lr=self.distill_lr, 
+                #     distill_temp=self.distill_temp
+                # )
 
             self.Budget.append(time.time() - t0)
             print(f"{'-'*10} round time: {self.Budget[-1]:.2f}s {'-'*10}")
@@ -138,7 +138,7 @@ class FLoraDual(Server):
     def load_ref_data(self, batch_size=None, ref_data_fraction=None):
         if batch_size == None:
             batch_size = self.batch_size_ref
-            
+        
         if self.ref_data:
             self.data_ref = self.dataset + '_ref'
         else:
@@ -208,6 +208,12 @@ class FLoraDual(Server):
                         teacher.set_global_adapter(adapter_dict)
                         # teacher is already in global‐only mode
 
+                        # print(f"teacher required grad weights:")
+                        # for name, param in teacher.named_parameters():
+                        #     # if not param.requires_grad:
+                        #     if param.requires_grad:
+                        #         print(f"{name:<60}  shape={tuple(param.shape)}")
+
                         teacher.to(self.device)
 
                         # forward through teacher
@@ -230,6 +236,13 @@ class FLoraDual(Server):
                     T_distill = torch.stack(teacher_probs, dim=0).sum(0)
 
                 self.clip_model_object.model_combined.to(self.device).train()
+                # self.clip_model_object.set_global_adapter(self.global_model)
+
+                # print(f"student required grad weights:")
+                # for name, param in self.clip_model_object.named_parameters():
+                #     # if not param.requires_grad:
+                #     if param.requires_grad:
+                #         print(f"{name:<60}  shape={tuple(param.shape)}")
 
                 # 3b) student logits (uses same student global‐only wrapper)
                 s_i = self.clip_model_object.model_combined.get_image_features(images).float()
@@ -238,7 +251,23 @@ class FLoraDual(Server):
                 ).float()
                 s_i = F.normalize(s_i, dim=1)
                 s_t = F.normalize(s_t, dim=1)
+
+                # si_bytes = s_i.numel() * s_i.element_size()
+                # st_bytes = s_t.numel() * s_t.element_size()
+
+                # si_mb = si_bytes / (1024 ** 2)
+                # st_mb = st_bytes / (1024 ** 2)
+
+                # print(f"[Distill] s_i shape={tuple(s_i.shape)}, size={si_mb:.2f} MB; "
+                #     f"s_t shape={tuple(s_t.shape)}, size={st_mb:.2f} MB")
+
                 student_logits = self.logit_scale * (s_i @ s_t.t())
+
+                # student_logits_bytes = student_logits.numel() * student_logits.element_size()
+                # student_logits_mb = student_logits_bytes / (1024 ** 2)
+
+                # print(f"[Distill] student_logits shape={tuple(student_logits.shape)}, size={student_logits_mb:.2f} MB")
+
                 student_logits_T = student_logits / T 
                 S_distill = F.log_softmax(student_logits_T, dim=-1)
 
