@@ -2,7 +2,7 @@ import time
 import random
 import copy
 import numpy as np
-from flcore.clients.clientdual import ClientDualLORA
+from flcore.clients.clientdualnogate import ClientDualLORA
 from flcore.servers.serverbase import Server
 from threading import Thread
 import statistics
@@ -11,10 +11,10 @@ import torch
 from torch.utils.data import DataLoader, Subset
 from utils.data_utils import read_client_data_clip
 
-from flcore.trainmodel.clip_model_dual import *
+from flcore.trainmodel.clip_model_dual_no_gate import *
 
 
-class FLoraDual(Server):
+class FLoraDualNoGate(Server):
     def __init__(self, args, times):
         super().__init__(args, times)
         # two sets of LoRA params

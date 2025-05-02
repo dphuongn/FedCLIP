@@ -686,6 +686,20 @@ class CLIPModelWithLoRA(torch.nn.Module):
                 return False
 
         return True  
+
+    def count_trainable_params(self) -> int:
+        """
+        Returns the total number of trainable parameters (i.e. requires_grad=True)
+        in the entire CLIPModelWithDualLoRA.
+        """
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def print_trainable_params(self):
+        """
+        Prints a nicely formatted count of trainable parameters.
+        """
+        total = self.count_trainable_params()
+        print(f"[LoRA CLIP] Total trainable parameters: {total:,}")
     
 class CLIPModelWithSoRA(torch.nn.Module):
     def __init__(self, model_checkpoint, home_dir, lora_params, layer_keys =[]):
@@ -1250,6 +1264,20 @@ class CLIPModelWithSoRADualHetero(torch.nn.Module):
 
             param.data.copy_(dictionary[key].data) 
 
+    def count_trainable_params(self) -> int:
+        """
+        Returns the total number of trainable parameters (i.e. requires_grad=True)
+        in the entire CLIPModelWithDualLoRA.
+        """
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def print_trainable_params(self):
+        """
+        Prints a nicely formatted count of trainable parameters.
+        """
+        total = self.count_trainable_params()
+        print(f"[LoRA CLIP] Total trainable parameters: {total:,}")
+
 class CLIPModelWithSoRADualHeteroCombined(torch.nn.Module):
     def __init__(self, model_checkpoint, home_dir, lora_params_global, lora_params_local, momentum_global=0.1, momentum_local=0.5):
         """
@@ -1784,12 +1812,12 @@ class CLIPModelWithLoRACombined(torch.nn.Module):
         # Freeze all parameters of lora_layers_global_copy
         self._freeze_lora_global_copy()
         
-        print(f'self.lora_layers_global: {self.lora_layers_global}')
-        print(f'self.lora_layers_global_copy: {self.lora_layers_global_copy}')
-        print(f'self.lora_layers_local: {self.lora_layers_local}')
+        # print(f'self.lora_layers_global: {self.lora_layers_global}')
+        # print(f'self.lora_layers_global_copy: {self.lora_layers_global_copy}')
+        # print(f'self.lora_layers_local: {self.lora_layers_local}')
         
         
-        print(f'self.model_combined: {self.model_combined}')
+        # print(f'self.model_combined: {self.model_combined}')
         
 
     def _apply_lora_global(self):
@@ -2041,6 +2069,20 @@ class CLIPModelWithLoRACombined(torch.nn.Module):
 
             # param.data.copy_(dictionary[key].data)
             param.data.copy_(self.momentum_local * param.data + (1 - self.momentum_local) * dictionary[key].data)
+
+    def count_trainable_params(self) -> int:
+        """
+        Returns the total number of trainable parameters (i.e. requires_grad=True)
+        in the entire CLIPModelWithDualLoRA.
+        """
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def print_trainable_params(self):
+        """
+        Prints a nicely formatted count of trainable parameters.
+        """
+        total = self.count_trainable_params()
+        print(f"[LoRA CLIP] Total trainable parameters: {total:,}")
     
 class CLIPModelWithAttentionAdapter(torch.nn.Module):
     def __init__(self, model_checkpoint, home_dir, aa_params):
@@ -2126,6 +2168,20 @@ class CLIPModelWithAttentionAdapter(torch.nn.Module):
         # Ensure that the structure of the new aa matches the existing one
         for new_param, old_param in zip(aa.parameters(), self.aa.parameters()):
             old_param.data = new_param.data.clone()
+
+    def count_trainable_params(self) -> int:
+        """
+        Returns the total number of trainable parameters (i.e. requires_grad=True)
+        in the entire CLIPModelWithDualLoRA.
+        """
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def print_trainable_params(self):
+        """
+        Prints a nicely formatted count of trainable parameters.
+        """
+        total = self.count_trainable_params()
+        print(f"[LoRA CLIP] Total trainable parameters: {total:,}")
     
 
 class CLIPModelFFT(torch.nn.Module):
@@ -2190,14 +2246,33 @@ if __name__ == "__main__":
         'alpha': 16,
         'dropout': 0.05,
 
-        'lora_query_text': True,
-        'lora_key_text': True,
-        'lora_value_text': True,
-        'lora_outproj_text': True,
-        'lora_mlp_text': True,
-        'lora_head_text': True,
+        # 'lora_query_text': True,
+        # 'lora_key_text': True,
+        # 'lora_value_text': True,
+        # 'lora_outproj_text': True,
+        # 'lora_mlp_text': True,
+        # 'lora_head_text': True,
         
+        'lora_query_vision': True,
+        'lora_key_vision': True,
+        'lora_value_vision': True,
+        'lora_outproj_vision': True,
+        'lora_mlp_vision': True,
+        'lora_head_vision': True,
+    }
 
+    lora_params_local = {
+        'rank': 4,
+        'alpha': 16,
+        'dropout': 0.05,
+
+        # 'lora_query_text': True,
+        # 'lora_key_text': True,
+        # 'lora_value_text': True,
+        # 'lora_outproj_text': True,
+        # 'lora_mlp_text': True,
+        # 'lora_head_text': True,
+        
         'lora_query_vision': True,
         'lora_key_vision': True,
         'lora_value_vision': True,
@@ -2209,38 +2284,42 @@ if __name__ == "__main__":
 
     # test CLIPModelWithLoRA
     
-    CLIPModelWithLoRA_object = CLIPModelWithLoRA(model_checkpoint=model_checkpoint, home_dir=HOME, lora_params=lora_params).to(device)
+    # CLIPModelWithLoRA_object = CLIPModelWithLoRA(model_checkpoint=model_checkpoint, home_dir=HOME, lora_params=lora_params).to(device)
+    # CLIPModelWithLoRA_object = CLIPModelWithLoRACombined(model_checkpoint=model_checkpoint, home_dir=HOME, lora_params_global=lora_params, lora_params_local=lora_params_local).to(device)
+    CLIPModelWithLoRA_object = CLIPModelWithSoRADualHetero(model_checkpoint=model_checkpoint, home_dir=HOME, lora_params=lora_params, lora_params_local=lora_params_local).to(device)
     
-    model = CLIPModelWithLoRA_object.model
+    # model = CLIPModelWithLoRA_object.model
     
-    lora_layers = CLIPModelWithLoRA_object.lora_layers
-    
-    print(f'lora_layers: {lora_layers}')
-    
-    # CLIPModelWithLoRA_object.print_lora_dict_shapes(lora_layers)
-    
-    num_lora_params =  CLIPModelWithLoRA_object.count_lora_parameters()
-    
-    print(f'number of lora params: {num_lora_params:,}')
-    
-    lora_size = CLIPModelWithLoRA_object.calculate_lora_size()
-    
-    print(f'lora size: {lora_size:.3f} MB')
-    
-    layer_index = 1
-    
-    lora_param_count = CLIPModelWithLoRA_object.count_lora_parameters_layer(layer_index)
-    lora_size_mb = CLIPModelWithLoRA_object.calculate_lora_size_layer(layer_index)
+    # lora_layers = CLIPModelWithLoRA_object.lora_layers
 
-    print(f"Number of LoRA parameters in layer {layer_index}: {lora_param_count}")
-    print(f"Size of LoRA adapter in layer {layer_index}: {lora_size_mb} MB")
+    CLIPModelWithLoRA_object.print_trainable_params()
+    
+    # print(f'lora_layers: {lora_layers}')
+    
+    # # CLIPModelWithLoRA_object.print_lora_dict_shapes(lora_layers)
+    
+    # num_lora_params =  CLIPModelWithLoRA_object.count_lora_parameters()
+    
+    # print(f'number of lora params: {num_lora_params:,}')
+    
+    # lora_size = CLIPModelWithLoRA_object.calculate_lora_size()
+    
+    # print(f'lora size: {lora_size:.3f} MB')
+    
+    # layer_index = 1
+    
+    # lora_param_count = CLIPModelWithLoRA_object.count_lora_parameters_layer(layer_index)
+    # lora_size_mb = CLIPModelWithLoRA_object.calculate_lora_size_layer(layer_index)
+
+    # print(f"Number of LoRA parameters in layer {layer_index}: {lora_param_count}")
+    # print(f"Size of LoRA adapter in layer {layer_index}: {lora_size_mb} MB")
 
     
-    lora_param_count_head = CLIPModelWithLoRA_object.count_lora_parameters_head()
-    lora_size_mb_head = CLIPModelWithLoRA_object.calculate_lora_size_head()
+    # lora_param_count_head = CLIPModelWithLoRA_object.count_lora_parameters_head()
+    # lora_size_mb_head = CLIPModelWithLoRA_object.calculate_lora_size_head()
 
-    print(f"Number of LoRA parameters in head: {lora_param_count_head}")
-    print(f"Size of LoRA adapter in head: {lora_size_mb_head} MB")
+    # print(f"Number of LoRA parameters in head: {lora_param_count_head}")
+    # print(f"Size of LoRA adapter in head: {lora_size_mb_head} MB")
 
 
     

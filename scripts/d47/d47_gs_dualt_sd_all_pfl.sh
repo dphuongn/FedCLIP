@@ -28,8 +28,8 @@ distill_learning_rate=(5e-5)
 # distill_learning_rate=(1e-6)
 
 # distill_epochs=(1 2 5)
-# distill_epochs=(1)
-distill_epochs=(2)
+distill_epochs=(1)
+# distill_epochs=(2)
 # distill_epochs=(5)
 
 # distill_temp=(0.5 1.0 3.0)
@@ -60,10 +60,14 @@ echo "Started batch job at $(date)"
 # learning_rates=(5e-5 1e-5 5e-6 1e-6)
 # learning_rates=(1e-6)                   # dir
 # learning_rates=(1e-6)                   # dir001
-# learning_rates=(5e-6)
+learning_rates=(5e-6)
 # learning_rates=(1e-5)
 # learning_rates=(5e-5)
-learning_rates=(1e-4)
+# learning_rates=(6e-5)
+# learning_rates=(7e-5)
+# learning_rates=(8e-5)
+# learning_rates=(9e-5)
+# learning_rates=(1e-4)
 # learning_rates=(5e-4)
 
 # weight_decays=(0 1e-3 1e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1)

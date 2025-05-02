@@ -14,7 +14,7 @@ from utils.data_utils import read_client_data_clip
 from flcore.trainmodel.clip_model_dual import *
 
 
-class FLoraDual(Server):
+class FLoraDualNoDistillation(Server):
     def __init__(self, args, times):
         super().__init__(args, times)
         # two sets of LoRA params
@@ -71,12 +71,12 @@ class FLoraDual(Server):
                     for c in self.selected_clients: 
                         c.train()
                     self.receive_models()
-                    # self.aggregate_parameters_lora()
-                    self.aggregate_via_distillation(
-                        distill_epochs=self.distill_epochs, 
-                        distill_lr=self.distill_lr, 
-                        distill_temp=self.distill_temp
-                    )
+                    self.aggregate_parameters_lora()
+                    # self.aggregate_via_distillation(
+                    #     distill_epochs=self.distill_epochs, 
+                    #     distill_lr=self.distill_lr, 
+                    #     distill_temp=self.distill_temp
+                    # )
 
             else:
                 # print(f"\n----- Round {rnd} (Personalized) -----")
@@ -90,12 +90,12 @@ class FLoraDual(Server):
                 print("\n-------------Evaluate personalized models-------------")
                 self.evaluate()
                 self.receive_models()
-                # self.aggregate_parameters_lora()
-                self.aggregate_via_distillation(
-                    distill_epochs=self.distill_epochs, 
-                    distill_lr=self.distill_lr, 
-                    distill_temp=self.distill_temp
-                )
+                self.aggregate_parameters_lora()
+                # self.aggregate_via_distillation(
+                #     distill_epochs=self.distill_epochs, 
+                #     distill_lr=self.distill_lr, 
+                #     distill_temp=self.distill_temp
+                # )
 
             self.Budget.append(time.time() - t0)
             print(f"{'-'*10} round time: {self.Budget[-1]:.2f}s {'-'*10}")

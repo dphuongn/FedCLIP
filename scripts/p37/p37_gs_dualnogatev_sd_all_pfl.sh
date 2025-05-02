@@ -1,27 +1,42 @@
 #!/bin/bash
 # Dataset 
-dataset='d47'
+dataset='p37'
 
 # Partition
 # partition='iid'
 # partition='dir10'
-partition='dir'
-# partition='dir001'
+# partition='dir'
+partition='dir001'
 
-algo='fdual'
+algo='fdualnogate'
 
 ranks=(2)
 alphas=(16)
 
+# batch_size_ref=(4 8 16 32)
+# batch_size_ref=(4)
+# batch_size_ref=(8)
+# batch_size_ref=(16)
 batch_size_ref=(32)
 
+# distill_learning_rate=(1e-5 1e-4 1e-3)
+# distill_learning_rate=[5e-5 1e-5 5e-6 1e-6)
+# distill_learning_rate=(5e-3 1e-3 5e-4 1e-4)
 distill_learning_rate=(5e-5)
+# distill_learning_rate=(1e-5)
+# distill_learning_rate=(5e-6)
+# distill_learning_rate=(1e-6)
+
 # distill_epochs=(1 2 5)
-
 distill_epochs=(1)
+# distill_epochs=(2)
+# distill_epochs=(5)
 
+# distill_temp=(0.5 1.0 3.0)
+# distill_temp=(1.0)
 distill_temp=(3.0)
 
+# ref_data_fraction=(0.1 0.5)
 ref_data_fraction=(0.1)
 
 # Define the directory where you want to store output and error files
@@ -42,15 +57,18 @@ echo "$PWD"
 echo "Started batch job at $(date)"
 
 # learning_rates=(5e-5 1e-5 5e-6 1e-6)
-learning_rates=(1e-5)                   # dir
-# learning_rates=(5e-5)                   # dir001
+
+# learning_rates=(1e-5)                   # dir
+# learning_rates=(5e-6)                   # dir
+
+learning_rates=(1e-5)                   # dir001
 
 # weight_decays=(0 1e-3 1e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1)
 weight_decays=(0)
 
 # seeds=(1 42)
-seeds=(0)
-seeds=(1)
+# seeds=(0)
+# seeds=(1)
 seeds=(42)
 
 for sd in "${seeds[@]}"; do
@@ -122,4 +140,3 @@ done
 
 wait
 echo "Finished all jobs at $(date)"
-

@@ -12,6 +12,8 @@ import logging
 from flcore.servers.serverlora import FLora
 from flcore.servers.servermeta import FMeta
 from flcore.servers.serverdual import FLoraDual
+from flcore.servers.serverdualnogate import FLoraDualNoGate
+from flcore.servers.serverdualnodistillation import FLoraDualNoDistillation
 from flcore.servers.serverloraselectmost import FLoraSelectMost
 from flcore.servers.serverloraselectmostwoh import FLoraSelectMostWoH
 from flcore.servers.serverloraselectleast import FLoraSelectLeast
@@ -23,13 +25,13 @@ from flcore.servers.serverloraselectrandom import FLoraSelectRandom
 from flcore.servers.serverloralocal import FLoraLocal
 from flcore.servers.serversoralocal import FSoraLocal
 # from flcore.servers.serversoradual import FSoraDual
-# from flcore.servers.serversoradualhetero import FSoraDualHetero
+from flcore.servers.serversoradualhetero import FSoraDualHetero
 # from flcore.servers.serversoradualheterotrue import FSoraDualHeteroTrue
 # from flcore.servers.serversoradualheterotruemomen import FSoraDualHeteroTrueMomen
 # from flcore.servers.serversoradualheterotruemu import FSoraDualHeteroTrueMu
-# from flcore.servers.serveraa import FedAa
+from flcore.servers.serveraa import FedAa
 # from flcore.servers.serverloradat import FLoraDAT
-# from flcore.servers.serverloradattrue import FLoraDATTrue
+from flcore.servers.serverloradattrue import FLoraDATTrue
 # from flcore.servers.serverloradattruemomen import FLoraDATTrueMomen
 # from flcore.servers.serverloradatglobal import FLoraDATGlobal
 # from flcore.servers.server2prune import FLora2Prune
@@ -113,6 +115,12 @@ def run(args):
         
         elif args.algorithm == "fdual":
             server = FLoraDual(args, i)
+
+        elif args.algorithm == "fdualnogate":
+            server = FLoraDualNoGate(args, i)
+
+        elif args.algorithm == "fdualnodistillation":
+            server = FLoraDualNoDistillation(args, i)
 
         elif args.algorithm == "floraselectmost":
             server = FLoraSelectMost(args, i)
@@ -342,6 +350,8 @@ if __name__ == "__main__":
     parser.add_argument('-distill_temp', "--distill_temp", type=float, default=3.0, 
                         help="temperature for KL divergence")
     parser.add_argument('-ref_data_fraction', "--ref_data_fraction", type=float, default=0.1)
+    parser.add_argument('-ref_data', "--ref_data", action='store_true', 
+                        help="use the same ref dataset or not (cifar10)")
 
     # FLoRADrop / FLoRADropReverse / FLoRASelectMost / FLoRASelectLeast
     parser.add_argument('-k_layers', "--k_layers", type=int, default=1)
@@ -415,6 +425,7 @@ if __name__ == "__main__":
     # SoRADUALHETERO
     parser.add_argument('--lora_rank_local', type=int, default=4, help="LoRA rank local")
     parser.add_argument('-g_l', "--gamma_local", type=float, default=0.1, help="gamma for local SoRA -> global LoRA distillation")
+    parser.add_argument('-g_g', "--gamma_global", type=float, default=1.0, help="gamma for global SoRA -> local LoRA distillation")
 
     # DP-SGD
     parser.add_argument('-t_e', '--target_epsilon', type=float, default=2.0, help="target epsilon for privacy")
@@ -668,6 +679,7 @@ if __name__ == "__main__":
     print("distill_learning_rate: {}".format(args.distill_learning_rate))
     print("distill_temp: {}".format(args.distill_temp))
     print("ref_data_fraction: {}".format(args.ref_data_fraction))
+    print("ref_data: {}".format(args.ref_data))
     print("-" * 20)
     
     print(f"{'-'*5} For DAT {'-'*5}")
@@ -733,6 +745,7 @@ if __name__ == "__main__":
     print(f"{'-'*5} For SoRADUALHETERO {'-'*5}")
     print("lora_rank_local: {}".format(args.lora_rank_local))
     print("gamma_local: {}".format(args.gamma_local))
+    print("gamma_global: {}".format(args.gamma_global))
     print("-" * 20)
 
     print(f"{'-'*5} For DP-SGD {'-'*5}")

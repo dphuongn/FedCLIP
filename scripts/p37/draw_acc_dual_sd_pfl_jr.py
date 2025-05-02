@@ -19,7 +19,7 @@ lightblue_color = '#87ceeb'
 magenta_color = '#ff00ff'   
 cyan_color = '#00ffff'
 
-dataset = 'd47'
+dataset = 'p37'
 
 # partition = 'iid'
 partition = 'dir'
@@ -62,24 +62,25 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     
-    plt.title(f'DTD | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
+    plt.title(f'Pets | {partition} | {alg}', fontsize=fontsize, fontweight='bold')
     plt.xlabel('Round', fontsize=fontsize)
     plt.ylabel('Top-1 accuracy (%)', fontsize=fontsize)
     plt.legend(fontsize=fontsize_small, ncol=2, loc='lower right', bbox_to_anchor=(1, 0))
     plt.grid(True)
     
-    plt.savefig(f'{dataset}_{partition}_{alg}_gs_all_pfl.pdf', format='pdf', bbox_inches='tight')
+    plt.savefig(f'{dataset}_{partition}_{alg}_gs_all_pfl_jr.pdf', format='pdf', bbox_inches='tight')
 
     plt.close()
 
 # lrs = ['5e-5', '1e-5', '5e-6', '1e-6']
-# lrs = ['1e-4', '9e-5', '8e-5', '7e-5', '6e-5', '5e-5', '1e-5', '5e-6']
+# lrs = ['5e-4', '1e-4', '5e-5', '1e-5', '5e-6', '1e-6']
+# lrs = ['1e-4']
 # lrs = ['5e-5']
 
-lrs = ['1e-5']                        # florav dir
+lrs = ['1e-5', '5e-6']                        # florav dir
+# lrs = ['5e-6']                        # florav dir
 
-# lrs = ['1e-5', '5e-5']                        # florav dir001
-# lrs = ['5e-5']                        # florav dir001
+# lrs = ['1e-5']                        # florav dir001
 
 wds = ['0']
 ranks = ['2']
@@ -111,8 +112,10 @@ ref_data_fraction = ['0.1']
 filenames = []
 labels = []
 
-seeds = ['0', '1', '42']
-# seeds = ['0', '1']
+# seeds = ['0', '1', '42']
+seeds = ['0']
+
+join_ratio = ['0.5']
 
 for sd in seeds: 
     for lr in lrs:
@@ -121,8 +124,9 @@ for sd in seeds:
                 for de in distill_epochs:
                     for dt in distill_temp:
                         for rf in ref_data_fraction:
-                            filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl.out')
-                            labels.append(f'lr={lr}, rbs={rbs}, dlr={dlr}, de={de}, dt={dt}, rf={rf}, sd={sd}')
+                            for jr in join_ratio:
+                                filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl_jr{jr}.out')
+                                labels.append(f'lr={lr}, rbs={rbs}, dlr={dlr}, de={de}, dt={dt}, rf={rf}, sd={sd}, jr={jr}')
 
 # for sd in seeds: 
 #     for lr in lrs:

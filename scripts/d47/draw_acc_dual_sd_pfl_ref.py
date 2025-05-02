@@ -68,7 +68,7 @@ def plot_multiple_accuracy_curves(filenames, labels, colors):
     plt.legend(fontsize=fontsize_small, ncol=2, loc='lower right', bbox_to_anchor=(1, 0))
     plt.grid(True)
     
-    plt.savefig(f'{dataset}_{partition}_{alg}_gs_all_pfl.pdf', format='pdf', bbox_inches='tight')
+    plt.savefig(f'{dataset}_{partition}_{alg}_gs_all_pfl_ref.pdf', format='pdf', bbox_inches='tight')
 
     plt.close()
 
@@ -121,7 +121,7 @@ for sd in seeds:
                 for de in distill_epochs:
                     for dt in distill_temp:
                         for rf in ref_data_fraction:
-                            filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl.out')
+                            filenames.append(f'../../logs/{dataset}/{dataset}_{partition}_{alg}_lr{lr}_rbs{rbs}_dlr{dlr}_de{de}_dt{dt}_rf{rf}_sd{sd}_all_pfl_ref.out')
                             labels.append(f'lr={lr}, rbs={rbs}, dlr={dlr}, de={de}, dt={dt}, rf={rf}, sd={sd}')
 
 # for sd in seeds: 

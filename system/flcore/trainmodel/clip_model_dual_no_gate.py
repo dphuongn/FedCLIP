@@ -81,7 +81,8 @@ class LinearWithDualLoRA(nn.Module):
         self.last_gating = g.detach()         # stash it for later
 
         # Broadcast across output dims automatically
-        return base + g * self.lora_global(x) + (1 - g) * self.lora_local(x)
+        # return base + g * self.lora_global(x) + (1 - g) * self.lora_local(x)
+        return base + self.lora_global(x) + self.lora_local(x)
 
 # -- Dual-LoRA CLIP wrapper ------------------------------------------------
 class CLIPModelWithDualLoRA(nn.Module):
