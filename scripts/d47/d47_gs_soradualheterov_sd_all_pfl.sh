@@ -10,6 +10,9 @@ partition='dir001'
 
 algo='fsoradualhetero'
 
+nc=(10)
+# nc=(20)
+
 # gammas_local=(0.1 1)
 # gammas_local=(1 10)
 # gammas_local=(0.001)               # dir
@@ -33,7 +36,7 @@ log_dir="/work/LAS/jannesar-lab/dphuong/FedCLIP/logs/${dataset}"
 mkdir -p $log_dir
 
 echo "Loading modules"
-module load miniconda3/22.11.1-hydt3qz  # update this if necessary by "module spider conda"
+# module load miniconda3/22.11.1-hydt3qz  # update this if necessary by "module spider conda"
 # source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora_pronto
 source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora
 # source activate /scratch/bczq/miniconda3/envs/flora
@@ -60,12 +63,12 @@ for sd in "${seeds[@]}"; do
                     for a in "${alphas[@]}"; do
                         for lr in "${learning_rates[@]}"; do
                             for wd in "${weight_decays[@]}"; do
-                                job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_rl${rl}_a${a}_sl${sl}_gl${gl}_sd${sd}_all_pfl"
+                                job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_rl${rl}_a${a}_sl${sl}_gl${gl}_sd${sd}_nc${nc}_all_pfl"
                                 output_file="${log_dir}/${job_name}.out"
                                 error_file="${log_dir}/${job_name}.err"
 
                                 echo "$PWD"
-                                echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sl=${sl}, rl=${rl}, gl=${gl}, sd=${sd}"
+                                echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sl=${sl}, rl=${rl}, gl=${gl}, sd=${sd}, nc=${nc}"
 
                                 sbatch_cmd="sbatch --job-name=$job_name \
                                     --partition=nova \
@@ -88,7 +91,7 @@ for sd in "${seeds[@]}"; do
                                                 --gamma_local ${gl} \
                                                 -gr 100 \
                                                 -did 0 \
-                                                -nc 10 \
+                                                -nc ${nc} \
                                                 -lbs 32 \
                                                 -lr ${lr} \
                                                 -wd ${wd} \
@@ -107,7 +110,7 @@ for sd in "${seeds[@]}"; do
                                 echo "Submitting job with command: $sbatch_cmd"
                                 eval $sbatch_cmd
 
-                                echo "Submitted job $job_name with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sl=${sl}, rl=${rl}, gl=${gl}, sd=${sd} at $(date)"
+                                echo "Submitted job $job_name at $(date)"
                             done
                         done
                     done

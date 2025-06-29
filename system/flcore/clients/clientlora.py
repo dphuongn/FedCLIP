@@ -110,8 +110,8 @@ class clientLORA(Client):
         end = time.time()
         elapsed = end-start
         # print(f"Number of training samples: {train_num}")
-        print(f"Time elapsed {elapsed/60:.2f} min")
-        print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
+        # print(f"Time elapsed {elapsed/60:.2f} min")
+        # print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
 
         if self.learning_rate_decay:
             self.learning_rate_scheduler.step()

@@ -59,6 +59,7 @@ class FLoraDual(Server):
         for rnd in range(self.global_rounds + 1):
             t0 = time.time()
             self.selected_clients = self.select_clients()
+            print(f'self.current_num_join_clients: {self.current_num_join_clients}')
             self.send_models()
 
             #  (T) or (P)-FL logic unchanged, but they all call client.train()
@@ -118,6 +119,8 @@ class FLoraDual(Server):
 
         active_clients = random.sample(
             self.selected_clients, int((1-self.client_drop_rate) * self.current_num_join_clients))
+
+        print(f'active_clients: {len(active_clients)}')
 
         self.uploaded_weights = []
         self.uploaded_models = []

@@ -6,7 +6,9 @@ dataset/dtd_ref/
 dataset/pets/
 dataset/pets_ref/
 dataset/aircraft/
+dataset/aircraft_ref/
 dataset/flowers/
+dataset/flowers_ref/
 dataset/cifar10/
 fast-differential-privacy/
 # Python bytecode

@@ -146,7 +146,7 @@ class ClientDualLORA(Client):
         # top1_1 = (top1_1 / test_num) 
         print(f"Number of testing samples: {test_num}")
         # print(f"Top-1 accuracy: {top1_1:.2f}")
-        print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
+        # print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
         return top1_1, test_num
                 
     def set_parameters(self, dictionary):

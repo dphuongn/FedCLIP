@@ -10,6 +10,9 @@ partition='dir'
 
 algo='floralocal'
 
+# nc=(20)
+nc=(30)
+
 ranks=(2)
 # ranks=(4 8)
 # alphas=(2 4 8 16 32 64)
@@ -47,12 +50,12 @@ for sd in "${seeds[@]}"; do
         for a in "${alphas[@]}"; do
             for lr in "${learning_rates[@]}"; do
                 for wd in "${weight_decays[@]}"; do
-                    job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_a${a}_sd${sd}_all_pfl"
+                    job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_a${a}_sd${sd}_nc${nc}_all_pfl"
                     output_file="${log_dir}/${job_name}.out"
                     error_file="${log_dir}/${job_name}.err"
 
                     echo "$PWD"
-                    echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sd=${sd}"
+                    echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sd=${sd}, nc=${nc}"
 
                     sbatch_cmd="sbatch --job-name=$job_name \
                         --partition=nova \
@@ -73,7 +76,7 @@ for sd in "${seeds[@]}"; do
                                     -algo ${algo} \
                                     -gr 100 \
                                     -did 0 \
-                                    -nc 10 \
+                                    -nc ${nc} \
                                     -lbs 32 \
                                     -lr ${lr} \
                                     -wd ${wd} \
@@ -91,7 +94,7 @@ for sd in "${seeds[@]}"; do
                     echo "Submitting job with command: $sbatch_cmd"
                     eval $sbatch_cmd
 
-                    echo "Submitted job $job_name with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sd=${sd} at $(date)"
+                    echo "Submitted job $job_name at $(date)"
                 done
             done
         done

@@ -5,10 +5,12 @@ dataset='d47'
 # Partition
 # partition='iid'
 # partition='dir10'
-# partition='dir'
-partition='dir001'
+partition='dir'
+# partition='dir001'
 
 algo='fedaa'
+
+nc=(20)
 
 aa_b_rs=(1)
 
@@ -31,25 +33,22 @@ echo "$PWD"
 echo "Started batch job at $(date)"
 
 # learning_rates=(5e-3 1e-3 5e-4 1e-4 5e-5 1e-5)
-# learning_rates=(1e-3)                           # dir
-learning_rates=(1e-3)                           # dir001
+learning_rates=(1e-3)                           # dir
+# learning_rates=(1e-3)                           # dir001
 
 # weight_decays=(0 1e-3 1e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1)
 weight_decays=(0)
 
 join_ratio=(0.5)
 
-# seeds=(0 1 42)
-seeds=(0)
-seeds=(1)
-seeds=(42)
+seeds=(0 1 42)
 
 for sd in "${seeds[@]}"; do
     for r in "${aa_b_rs[@]}"; do
         for lr in "${learning_rates[@]}"; do
             for wd in "${weight_decays[@]}"; do
                 for jr in "${join_ratio[@]}"; do
-                    job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_sd${sd}_pfl_jr${jr}"
+                    job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_sd${sd}_nc${nc}_pfl_jr${jr}"
                     output_file="${log_dir}/${job_name}.out"
                     error_file="${log_dir}/${job_name}.err"
 
@@ -57,51 +56,40 @@ for sd in "${seeds[@]}"; do
                     > $output_file
                     > $error_file
 
-                    echo "Running with algo=${algo}, lr=${lr}, sd=${sd}, jr=${jr}" | tee -a $output_file
+                    echo "Running with algo=${algo}, lr=${lr}, sd=${sd}, nc=${nc}, jr=${jr}" | tee -a $output_file
 
-                    # Capture GPU info before execution
-                    {
-                        echo "==========================="
-                        echo "GPU Info:"
-                        nvidia-smi -L
-                        nvidia-smi --query-gpu=memory.total --format=csv
-                        nvidia-smi --query-gpu=compute_cap --format=csv
-                        nvidia-smi --query-gpu=power.max_limit --format=csv
-                        echo "==========================="
-                    } >> $output_file
+                    sbatch_cmd="sbatch --job-name=$job_name \
+                        --partition=nova \
+                        --gres=gpu:a100:1 \
+                        --nodes=1 \
+                        --mem=50G \
+                        --time=0-8:00:00 \
+                        --mail-user='dphuong@iastate.edu' \
+                        --mail-type=END \
+                        --output=$output_file \
+                        --error=$error_file \
+                        --wrap=\"nvidia-smi -L > $output_file && \
+                                nvidia-smi --query-gpu=memory.total --format=csv >> $output_file && \
+                                nvidia-smi --query-gpu=compute_cap --format=csv >> $output_file && \
+                                nvidia-smi --query-gpu=power.max_limit --format=csv >> $output_file && \
+                                echo 'GPU details saved to $output_file' && \
+                                time python main.py -data ${dataset} \
+                                    -algo ${algo} \
+                                    -gr 100 \
+                                    -did 0 \
+                                    -nc ${nc} \
+                                    -lbs 32 \
+                                    -lr ${lr} \
+                                    -wd ${wd} \
+                                    --aa_bottleneck_reduction ${r} \
+                                    --aa_vision \
+                                    -pfl \
+                                    -jr ${jr} \
+                                    -sd ${sd}\""
 
-                    echo "GPU details saved to $output_file" | tee -a $output_file
-                    echo "Running training script..." | tee -a $output_file
+                    echo "Submitting job with command: $sbatch_cmd"
+                    eval $sbatch_cmd
 
-                    # Run the command and measure execution time
-
-                    {
-                        START_TIME=$(date +%s)
-                        time python main.py -data ${dataset} \
-                            -algo ${algo} \
-                            -gr 100 \
-                            -did 0 \
-                            -nc 10 \
-                            -lbs 32 \
-                            -lr ${lr} \
-                            -wd ${wd} \
-                            --aa_bottleneck_reduction ${r} \
-                            --aa_vision \
-                            -pfl \
-                            -rjr \
-                            -jr ${jr} \
-                            -sd ${sd}\
-                        >> $output_file 2>> $error_file
-
-                        END_TIME=$(date +%s)
-                        ELAPSED_TIME=$((END_TIME - START_TIME))
-
-                        echo "===========================" >> $output_file
-                        echo "Execution Time Summary:" >> $output_file
-                        echo "Total Time: ${ELAPSED_TIME} seconds" >> $output_file
-                        echo "===========================" >> $output_file
-
-                    } 2>> $output_file &
                     echo "Started job ${job_name} at $(date)"
                 done
             done

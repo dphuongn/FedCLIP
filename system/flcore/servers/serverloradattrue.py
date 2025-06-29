@@ -32,6 +32,7 @@ class FLoraDATTrue(Server):
         for i in range(self.global_rounds + 1):
             s_t = time.time()
             self.selected_clients = self.select_clients()
+            print(f'self.current_num_join_clients: {self.current_num_join_clients}')
             self.send_models()
 
             if not self.pfl: # tfl
@@ -105,6 +106,8 @@ class FLoraDATTrue(Server):
 
         active_clients = random.sample(
             self.selected_clients, int((1-self.client_drop_rate) * self.current_num_join_clients))
+
+        print(f'active_clients: {len(active_clients)}')
 
         self.uploaded_weights = []
         self.uploaded_models = []

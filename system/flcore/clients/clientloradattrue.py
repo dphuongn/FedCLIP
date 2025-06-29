@@ -233,8 +233,8 @@ class clientLORADATTRUE(Client):
                         reduction='batchmean'
                     )
                     
-                    print(f'kl_div_loss_image: {kl_div_loss_image}')
-                    print(f'kl_div_loss_text: {kl_div_loss_text}')
+                    # print(f'kl_div_loss_image: {kl_div_loss_image}')
+                    # print(f'kl_div_loss_text: {kl_div_loss_text}')
 
                     kl_div_loss = (kl_div_loss_image + kl_div_loss_text) / 2
                     
@@ -275,8 +275,8 @@ class clientLORADATTRUE(Client):
         end = time.time()
         elapsed = end-start
         # print(f"Number of training samples: {train_num}")
-        print(f"Time elapsed {elapsed/60:.2f} min")
-        print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
+        # print(f"Time elapsed {elapsed/60:.2f} min")
+        # print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
 
         if self.learning_rate_decay:
             self.global_learning_rate_scheduler.step()

@@ -139,8 +139,8 @@ class clientAA(Client):
 
         end = time.time()
         elapsed = end-start
-        print(f"Time elapsed {elapsed/60:.2f} min")
-        print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
+        # print(f"Time elapsed {elapsed/60:.2f} min")
+        # print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB")
 
         self.train_time_cost['num_rounds'] += 1
         self.train_time_cost['total_cost'] += elapsed
