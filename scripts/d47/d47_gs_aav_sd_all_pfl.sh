@@ -41,7 +41,6 @@ learning_rates=(1e-3)                           # dir001
 weight_decays=(0)
 
 seeds=(0 1 42)
-# seeds=(0)
 
 for sd in "${seeds[@]}"; do
     for r in "${aa_b_rs[@]}"; do
@@ -50,6 +49,10 @@ for sd in "${seeds[@]}"; do
                 job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_sd${sd}_nc${nc}_pfl"
                 output_file="${log_dir}/${job_name}.out"
                 error_file="${log_dir}/${job_name}.err"
+
+                # Clear previous logs
+                > $output_file
+                > $error_file
 
                 echo "$PWD"
                 echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, sd=${sd}, nc=${nc}"
@@ -91,4 +94,5 @@ for sd in "${seeds[@]}"; do
     done
 done
 
+wait
 echo "Finished submitting all jobs at $(date)"

@@ -67,6 +67,10 @@ for sd in "${seeds[@]}"; do
                                 output_file="${log_dir}/${job_name}.out"
                                 error_file="${log_dir}/${job_name}.err"
 
+                                # Clear previous logs
+                                > $output_file
+                                > $error_file
+
                                 echo "$PWD"
                                 echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sl=${sl}, rl=${rl}, gl=${gl}, sd=${sd}, nc=${nc}"
 

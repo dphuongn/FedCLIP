@@ -1,21 +1,22 @@
 #!/bin/bash
 # Dataset 
-dataset='a100'
+dataset='f102'
 
 # Partition
 # partition='iid'
 # partition='dir10'
-partition='dir'
-# partition='dir001'
+# partition='dir'
+partition='dir001'
 
 algo='fsoradualhetero'
 
+# nc=(10)
 nc=(20)
 
 # gammas_local=(0.1 1)
 # gammas_local=(1 10)
-gammas_local=(0.1)                   # dir
-# gammas_local=(0.01)                   # dir001
+# gammas_local=(0.01)                   # dir
+gammas_local=(0.01)                   # dir001
 
 gammas_global=(1)       
 
@@ -39,7 +40,7 @@ mkdir -p $log_dir
 echo "Loading modules"
 # module load miniconda3/22.11.1-hydt3qz  # update this if necessary by "module spider conda"
 # source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora_pronto
-source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora
+# source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora
 # source activate /scratch/bczq/miniconda3/envs/flora
 
 cd /work/LAS/jannesar-lab/dphuong/FedCLIP/system
@@ -48,8 +49,8 @@ echo "$PWD"
 echo "Started batch job at $(date)"
 
 # learning_rates=(5e-5 1e-5 5e-6 1e-6)
-learning_rates=(5e-5)                   # dir
-# learning_rates=(5e-5)                   # dir001
+# learning_rates=(1e-5)                   # dir
+learning_rates=(1e-5)                   # dir001
 
 # weight_decays=(0 1e-3 1e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1)
 weight_decays=(0)
@@ -68,12 +69,16 @@ for gg in "${gammas_global[@]}"; do
                             for lr in "${learning_rates[@]}"; do
                                 for wd in "${weight_decays[@]}"; do
                                     for jr in "${join_ratio[@]}"; do
-                                        job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_rl${rl}_a${a}_sl${sl}_gl${gl}_gg${gg}_sd${sd}_nc${nc}_all_pfl_jr${jr}"
+                                        job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_rl${rl}_a${a}_sl${sl}_gl${gl}_gg${gg}_sd${sd}_nc${nc}_all_pfl_rjr${jr}"
                                         output_file="${log_dir}/${job_name}.out"
                                         error_file="${log_dir}/${job_name}.err"
 
+                                        # Clear previous logs
+                                        > $output_file
+                                        > $error_file
+
                                         echo "$PWD"
-                                        echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sl=${sl}, rl=${rl}, gl=${gl}, sd=${sd}, gg=${gg}, nc=${nc}, jr=${jr}"
+                                        echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sl=${sl}, rl=${rl}, gl=${gl}, sd=${sd}, gg=${gg}, nc=${nc}, rjr=${jr}"
 
                                         sbatch_cmd="sbatch --job-name=$job_name \
                                             --partition=nova \
@@ -111,6 +116,7 @@ for gg in "${gammas_global[@]}"; do
                                                         --lora_mlp_vision \
                                                         --lora_head_vision \
                                                         -pfl \
+                                                        -rjr \
                                                         -jr ${jr} \
                                                         -sd ${sd}\""
 

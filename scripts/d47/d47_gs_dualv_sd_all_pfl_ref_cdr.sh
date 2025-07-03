@@ -10,8 +10,8 @@ partition='dir001'
 
 algo='fdual'
 
-nc=(10)
-# nc=(20)
+# nc=(10)
+nc=(20)
 
 ranks=(2)
 alphas=(16)
@@ -25,7 +25,9 @@ distill_epochs=(1)
 
 distill_temp=(3.0)
 
+# ref_data_fraction=(0.1)
 ref_data_fraction=(0.01)
+# ref_data_fraction=(0.001)
 
 # Define the directory where you want to store output and error files
 log_dir="/work/LAS/jannesar-lab/dphuong/FedCLIP/logs/${dataset}"

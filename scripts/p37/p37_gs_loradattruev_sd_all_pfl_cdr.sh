@@ -10,8 +10,8 @@ partition='dir001'
 
 algo='floradattrue'
 
-nc=(10)
-# nc=(20)
+# nc=(10)
+nc=(20)
 
 ranks=(2)
 # alphas=(2 4 8 16 32 64)

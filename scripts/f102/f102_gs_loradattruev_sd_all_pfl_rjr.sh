@@ -5,15 +5,15 @@ dataset='f102'
 # Partition
 # partition='iid'
 # partition='dir10'
-partition='dir'
-# partition='dir001'
+# partition='dir'
+partition='dir001'
 
-algo='flora'
+algo='floradattrue'
 
+# nc=(10)
 nc=(20)
 
 ranks=(2)
-# ranks=(4 8)
 # alphas=(2 4 8 16 32 64)
 alphas=(16)
 
@@ -35,16 +35,16 @@ cd /work/LAS/jannesar-lab/dphuong/FedCLIP/system
 echo "$PWD"
 echo "Started batch job at $(date)"
 
-# learning_rates=(5e-5 1e-5 5e-6 1e-6)
-learning_rates=(1e-5)                   #dir
-# learning_rates=(1e-5)                   #dir001
+# learning_rates=(5e-5 1e-5 5e-6 1e-6)        
+# learning_rates=(1e-5)                   # dir
+learning_rates=(5e-6)                   # dir001
 
 # weight_decays=(0 1e-3 1e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1)
 weight_decays=(0)
 
 join_ratio=(0.5)
 
-seeds=(0 1 42)         
+seeds=(0 1 42)
 
 for sd in "${seeds[@]}"; do
     for r in "${ranks[@]}"; do
@@ -52,12 +52,16 @@ for sd in "${seeds[@]}"; do
             for lr in "${learning_rates[@]}"; do
                 for wd in "${weight_decays[@]}"; do
                     for jr in "${join_ratio[@]}"; do
-                        job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_a${a}_sd${sd}_nc${nc}_all_pfl_jr${jr}"
+                        job_name="${dataset}_${partition}_${algo}v_lr${lr}_wd${wd}_r${r}_a${a}_sd${sd}_nc${nc}_all_pfl_rjr${jr}"
                         output_file="${log_dir}/${job_name}.out"
                         error_file="${log_dir}/${job_name}.err"
 
+                        # Clear previous logs
+                        > $output_file
+                        > $error_file
+
                         echo "$PWD"
-                        echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sd=${sd}, nc=${nc}, jr=${jr}"
+                        echo "Running with algo=${algo}, lr=${lr}, wd=${wd}, r=${r}, a=${a}, sd=${sd}, nc=${nc}, rjr=${jr}"
 
                         sbatch_cmd="sbatch --job-name=$job_name \
                             --partition=nova \
@@ -91,6 +95,7 @@ for sd in "${seeds[@]}"; do
                                         --lora_mlp_vision \
                                         --lora_head_vision \
                                         -pfl \
+                                        -rjr \
                                         -jr ${jr} \
                                         -sd ${sd}\""
 

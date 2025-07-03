@@ -1,6 +1,6 @@
 #!/bin/bash
 # Dataset 
-dataset='d47'
+dataset='f102'
 
 # Partition
 # partition='iid'
@@ -26,8 +26,8 @@ distill_epochs=(1)
 distill_temp=(3.0)
 
 # ref_data_fraction=(0.1)
-ref_data_fraction=(0.01)
-# ref_data_fraction=(0.001)
+# ref_data_fraction=(0.01)
+ref_data_fraction=(0.001)
 
 # Define the directory where you want to store output and error files
 log_dir="/work/LAS/jannesar-lab/dphuong/FedCLIP/logs/${dataset}"
@@ -48,7 +48,7 @@ echo "Started batch job at $(date)"
 
 # learning_rates=(5e-5 1e-5 5e-6 1e-6)
 # learning_rates=(1e-5)                   # dir
-learning_rates=(5e-5)                   # dir001
+learning_rates=(1e-5)                   # dir001
 
 # weight_decays=(0 1e-3 1e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1)
 weight_decays=(0)
@@ -62,7 +62,7 @@ for sd in "${seeds[@]}"; do
                 for de in "${distill_epochs[@]}"; do
                     for dt in "${distill_temp[@]}"; do
                         for rf in "${ref_data_fraction[@]}"; do
-                            job_name="${dataset}_${partition}_${algo}v_lr${lr}_rbs${rbs}_dlr${dlr}_de${de}_dt${dt}_rf${rf}_sd${sd}_nc${nc}_all_pfl_ref"
+                            job_name="${dataset}_${partition}_${algo}v_lr${lr}_rbs${rbs}_dlr${dlr}_de${de}_dt${dt}_rf${rf}_sd${sd}_nc${nc}_all_pfl"
                             output_file="${log_dir}/${job_name}.out"
                             error_file="${log_dir}/${job_name}.err"
 
@@ -102,7 +102,6 @@ for sd in "${seeds[@]}"; do
                                             -distill_epochs ${de} \
                                             -distill_temp ${dt} \
                                             -ref_data_fraction ${rf} \
-                                            -ref_data \
                                             --lora_key_vision \
                                             --lora_query_vision \
                                             --lora_value_vision \
@@ -126,3 +125,4 @@ done
 
 wait
 echo "Finished all jobs at $(date)"
+

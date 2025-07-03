@@ -5,13 +5,13 @@ dataset='d47'
 # Partition
 # partition='iid'
 # partition='dir10'
-partition='dir'
-# partition='dir001'
+# partition='dir'
+partition='dir001'
 
 algo='fsoradualhetero'
 
-nc=(10)
-# nc=(20)
+# nc=(10)
+nc=(20)
 
 # gammas_local=(0.1 1)
 # gammas_local=(1 10)

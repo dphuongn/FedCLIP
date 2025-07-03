@@ -1,12 +1,12 @@
 #!/bin/bash
 # Dataset 
-dataset='d47'
+dataset='f102'
 
 # Partition
 # partition='iid'
 # partition='dir10'
-# partition='dir'
-partition='dir001'
+partition='dir'
+# partition='dir001'
 
 algo='fdualnodistillation'
 
@@ -47,8 +47,8 @@ echo "$PWD"
 echo "Started batch job at $(date)"
 
 # learning_rates=(5e-5 1e-5 5e-6 1e-6)
-# learning_rates=(1e-5)                   # dir
-learning_rates=(5e-5)                   # dir001
+learning_rates=(1e-5)                   # dir
+# learning_rates=(1e-5)                   # dir001
 
 # weight_decays=(0 1e-3 1e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1)
 weight_decays=(0)
@@ -126,3 +126,4 @@ done
 
 wait
 echo "Finished all jobs at $(date)"
+
