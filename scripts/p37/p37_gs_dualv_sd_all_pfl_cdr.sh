@@ -10,8 +10,8 @@ partition='dir001'
 
 algo='fdual'
 
-# nc=(10)
-nc=(20)
+nc=(10)
+# nc=(20)
 
 ranks=(2)
 alphas=(16)

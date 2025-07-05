@@ -10,8 +10,8 @@ partition='dir001'
 
 algo='fedaa'
 
-# nc=(10)
-nc=(20)
+nc=(10)
+# nc=(20)
 
 aa_b_rs=(1)
 
