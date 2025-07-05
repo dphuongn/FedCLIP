@@ -10,8 +10,9 @@ partition='dir001'
 
 algo='fsoradualhetero'
 
-nc=(10)
+# nc=(10)
 # nc=(20)
+nc=(30)
 
 # gammas_local=(0.1 1)
 # gammas_local=(0.01 0.1)
