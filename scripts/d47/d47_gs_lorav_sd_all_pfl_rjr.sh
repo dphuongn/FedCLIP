@@ -11,7 +11,8 @@ partition='dir001'
 algo='flora'
 
 # nc=(10)
-nc=(20)
+# nc=(20)
+nc=(30)
 
 ranks=(2)
 # ranks=(4 8)
