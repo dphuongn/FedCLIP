@@ -10,8 +10,9 @@ partition='dir'
 
 algo='floralocal'
 
+nc=(10)
 # nc=(20)
-nc=(30)
+# nc=(30)
 
 ranks=(2)
 # ranks=(4 8)
@@ -26,9 +27,9 @@ log_dir="/work/LAS/jannesar-lab/dphuong/FedCLIP/logs/${dataset}"
 mkdir -p $log_dir
 
 echo "Loading modules"
-module load miniconda3/22.11.1-hydt3qz  # update this if necessary by "module spider conda"
+# module load miniconda3/22.11.1-hydt3qz  # update this if necessary by "module spider conda"
 # source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora_pronto
-source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora
+# source activate /work/LAS/jannesar-lab/dphuong/.conda/envs/flora
 # source activate /scratch/bczq/miniconda3/envs/flora
 
 cd /work/LAS/jannesar-lab/dphuong/FedCLIP/system
@@ -101,4 +102,5 @@ for sd in "${seeds[@]}"; do
     done
 done
 
+wait
 echo "Finished submitting all jobs at $(date)"
